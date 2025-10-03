@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '../../lib/supabaseClient';
+import { supabase } from '../../lib/database/SupabaseClient';
 
 export default function Auth() {
   const [email, setEmail] = useState('');
@@ -28,7 +28,10 @@ export default function Auth() {
   }
 
   return (
-    <div className="flex flex-col gap-2 max-w-xs">
+    <dialog
+      className="flex flex-col gap-1"
+      style={{ alignSelf: 'anchor-center' }}
+    >
       <input
         className="border p-2"
         type="email"
@@ -47,6 +50,6 @@ export default function Auth() {
       <button onClick={handleSignUp} disabled={loading}>
         Sign Up
       </button>
-    </div>
+    </dialog>
   );
 }
