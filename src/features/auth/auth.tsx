@@ -6,16 +6,16 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  async function handleSignUp() {
-    setLoading(true);
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-    if (error) alert(error.message);
-    else alert('Check your email for confirmation!');
-    setLoading(false);
-  }
+  // async function handleSignUp() {
+  //   setLoading(true);
+  //   const { error } = await supabase.auth.signUp({
+  //     email,
+  //     password,
+  //   });
+  //   if (error) alert(error.message);
+  //   else alert('Check your email for confirmation!');
+  //   setLoading(false);
+  // }
 
   async function handleSignIn() {
     setLoading(true);
@@ -47,9 +47,9 @@ export default function Auth() {
       <button onClick={handleSignIn} disabled={loading}>
         Sign In
       </button>
-      <button onClick={handleSignUp} disabled={loading}>
+      {/* <button onClick={handleSignUp} disabled={loading}>
         Sign Up
-      </button>
+      </button> */}
     </dialog>
   );
 }

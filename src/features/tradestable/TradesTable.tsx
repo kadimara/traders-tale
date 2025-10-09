@@ -1,15 +1,15 @@
 import { useState, type CSSProperties, type ReactNode } from 'react';
+import { Edit, Info, Plus, Save, X } from 'react-feather';
+import { Input } from '../../components/Input';
+import { InputNumber } from '../../components/InputNumber';
 import { useTradesContext } from '../../context/TradesContext';
 import {
   setLocalStorageItem,
   useLocalStorage,
 } from '../../hooks/useLocalStorage';
 import type { TradesRow, TradesUpdate } from '../../lib/database/api';
-import { InputNumber } from '../../components/InputNumber';
-import { Edit, Info, Plus, Save, Trash, X } from 'react-feather';
-import { getTradePnl, getTradeRisk } from '../../lib/TradeUtils';
-import { Input } from '../../components/Input';
 import { toUSD } from '../../lib/MathUtils';
+import { getTradePnl, getTradeRisk } from '../../lib/TradeUtils';
 
 export function TradesTable() {
   const { trades, insertTrade } = useTradesContext();
@@ -31,16 +31,12 @@ export function TradesTable() {
   return (
     <>
       <table>
-        <colgroup>
-          {columns.map((col) => (
-            <col key={col.key} style={col.style} />
-          ))}
-          <col style={{ width: 64 }} />
-        </colgroup>
         <thead>
           <tr>
             {columns.map((col) => (
-              <th key={col.key}>{col.label}</th>
+              <th key={col.key} style={col.style}>
+                {col.label}
+              </th>
             ))}
             <th>
               <button aria-label="Add" title="Add" onClick={handleAddTrade}>
@@ -77,7 +73,7 @@ export function TradesTable() {
 }
 
 function Row({ trade }: { trade: TradesRow }) {
-  const { deleteTrade, updateTrade } = useTradesContext();
+  const { updateTrade } = useTradesContext();
   const [showDetails, setShowDetails] = useState(false);
 
   const [tradeLocal, setTradeLocal] =
@@ -89,10 +85,10 @@ function Row({ trade }: { trade: TradesRow }) {
   const handleEdit = () => {
     setTradeLocal({});
   };
-  const handleDelete = () => {
-    const result = confirm('Are you sure you want to delete this trade?');
-    if (result) deleteTrade(trade.id);
-  };
+  // const handleDelete = () => {
+  //   const result = confirm('Are you sure you want to delete this trade?');
+  //   if (result) deleteTrade(trade.id);
+  // };
   const handleSave = async () => {
     if (tradeLocal && Object.keys(tradeLocal).length > 0) {
       await updateTrade(trade.id, {
@@ -107,7 +103,6 @@ function Row({ trade }: { trade: TradesRow }) {
   const toggleDetails = () => setShowDetails((v) => !v);
 
   const handleChange = (key: keyof TradesRow, value: unknown) => {
-    console.log(key, value);
     setTradeLocal((prev) => ({
       ...prev,
       risk: getTradeRisk(tradeCombined),
@@ -122,40 +117,46 @@ function Row({ trade }: { trade: TradesRow }) {
         {columns.map((col) => {
           const render = col.render ?? ((row: TradesRow) => row[col.key]);
           return (
-            <th key={col.key}>
+            <th key={col.key} style={col.style}>
               {render(tradeCombined, editable, (value) =>
                 handleChange(col.key, value)
               )}
             </th>
           );
         })}
-        <th>
-          {editable ? (
-            <>
-              <button aria-label="Save" title="Save" onClick={handleSave}>
-                <Save />
-              </button>
-              <button aria-label="Cancel" title="Cancel" onClick={handleCancel}>
-                <X />
-              </button>
-            </>
-          ) : (
-            <>
-              <button aria-label="Edit" title="Edit" onClick={handleEdit}>
-                <Edit />
-              </button>
-              <button
-                aria-label="Details"
-                title="Details"
-                onClick={toggleDetails}
-              >
-                <Info />
-              </button>
-              {/* <button aria-label="Delete" title="Delete" onClick={handleDelete}>
+        <th style={{ justifyItems: 'center' }}>
+          <div className="flex gap-1">
+            {editable ? (
+              <>
+                <button aria-label="Save" title="Save" onClick={handleSave}>
+                  <Save />
+                </button>
+                <button
+                  aria-label="Cancel"
+                  title="Cancel"
+                  onClick={handleCancel}
+                >
+                  <X />
+                </button>
+              </>
+            ) : (
+              <>
+                <button aria-label="Edit" title="Edit" onClick={handleEdit}>
+                  <Edit />
+                </button>
+                <button
+                  aria-label="Details"
+                  title="Details"
+                  onClick={toggleDetails}
+                >
+                  <Info />
+                </button>
+                {/* <button aria-label="Delete" title="Delete" onClick={handleDelete}>
               <Trash />
-            </button> */}
-            </>
-          )}
+              </button> */}
+              </>
+            )}
+          </div>
         </th>
       </tr>
       {(showDetails || editable) && (
@@ -180,8 +181,8 @@ function RowDetails({
 }) {
   return (
     <tr>
-      <td colSpan={columns.length + 1}>
-        <div className="flex flex-col gap-1" style={{ padding: '0 8px' }}>
+      <td colSpan={columns.length + 1} style={{ padding: '0 8px' }}>
+        <div className="flex flex-col gap-1">
           {editable ? (
             <>
               <Input
@@ -270,7 +271,7 @@ const columns: {
   {
     label: 'ACCOUNT',
     key: 'account',
-    style: { minWidth: 100 },
+    style: { minWidth: 100, textAlign: 'right' },
     render(row, editable, onChange) {
       return editable ? (
         <InputNumber value={row.account} onChange={onChange} />
@@ -282,7 +283,7 @@ const columns: {
   {
     label: 'AMOUNT',
     key: 'amount',
-    style: { minWidth: 100 },
+    style: { minWidth: 100, textAlign: 'right' },
     render(row, editable, onChange) {
       return editable ? (
         <InputNumber value={row.amount} onChange={onChange} />
@@ -294,7 +295,7 @@ const columns: {
   {
     label: 'SL',
     key: 'stop',
-    style: { minWidth: 100 },
+    style: { minWidth: 100, textAlign: 'right' },
     render(row, editable, onChange) {
       return editable ? (
         <InputNumber value={row.stop} onChange={onChange} />
@@ -306,7 +307,7 @@ const columns: {
   {
     label: 'ENTRY',
     key: 'entry',
-    style: { minWidth: 100 },
+    style: { minWidth: 100, textAlign: 'right' },
     render(row, editable, onChange) {
       return editable ? (
         <InputNumber value={row.entry} onChange={onChange} />
@@ -318,7 +319,7 @@ const columns: {
   {
     label: 'TARGET',
     key: 'target',
-    style: { minWidth: 100 },
+    style: { minWidth: 100, textAlign: 'right' },
     render(row, editable, onChange) {
       return editable ? (
         <InputNumber value={row.target} onChange={onChange} />
@@ -330,7 +331,7 @@ const columns: {
   {
     label: 'EXIT',
     key: 'exit',
-    style: { minWidth: 100 },
+    style: { minWidth: 100, textAlign: 'right' },
     render(row, editable, onChange) {
       return editable ? (
         <InputNumber value={row.exit} onChange={onChange} />
@@ -342,19 +343,19 @@ const columns: {
   {
     label: 'FEES',
     key: 'fees',
-    style: { width: 64 },
+    style: { width: 64, textAlign: 'right' },
     render: (row) => toUSD(row.fees),
   },
   {
     label: 'RISK',
     key: 'risk',
-    style: { width: 64 },
+    style: { width: 64, textAlign: 'right' },
     render: (row) => (row.risk ? (row.risk * 100).toFixed(2) + '%' : ''),
   },
   {
     label: 'PNL',
     key: 'pnl',
-    style: { width: 64 },
+    style: { width: 64, textAlign: 'right' },
     render: (row) => toUSD(row.pnl),
   },
 ];
