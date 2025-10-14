@@ -1,5 +1,5 @@
 import { useState, type CSSProperties, type ReactNode } from 'react';
-import { Edit, Info, Plus, Save, X } from 'react-feather';
+import { Circle, Edit, Info, Plus, Save, X } from 'react-feather';
 import { Input } from '../../components/Input';
 import { InputNumber } from '../../components/InputNumber';
 import { useTradesContext } from '../../context/TradesContext';
@@ -10,9 +10,19 @@ import {
 import type { TradesRow, TradesUpdate } from '../../lib/database/api';
 import { toUSD } from '../../lib/MathUtils';
 import { getTradePnl, getTradeRisk } from '../../lib/TradeUtils';
+import { TradeDetails } from './TradeDetails';
 
 export function TradesTable() {
   const { trades, insertTrade } = useTradesContext();
+
+  // const tradesByMonth = trades?.reduce((acc, trade) => {
+  //   const month = new Date(trade.created_at).toISOString().slice(0, 7); // Format: YYYY-MM
+  //   if (!acc[month]) {
+  //     acc[month] = [];
+  //   }
+  //   acc[month].push(trade);
+  //   return acc;
+  // }, {} as Record<string, TradesRow[]>);
 
   const handleAddTrade = async () => {
     const trade = await insertTrade({
@@ -34,9 +44,7 @@ export function TradesTable() {
         <thead>
           <tr>
             {columns.map((col) => (
-              <th key={col.key} style={col.style}>
-                {col.label}
-              </th>
+              <th key={col.key}>{col.label}</th>
             ))}
             <th>
               <button aria-label="Add" title="Add" onClick={handleAddTrade}>
@@ -74,13 +82,14 @@ export function TradesTable() {
 
 function Row({ trade }: { trade: TradesRow }) {
   const { updateTrade } = useTradesContext();
-  const [showDetails, setShowDetails] = useState(false);
-
   const [tradeLocal, setTradeLocal] =
     useLocalStorage<Partial<TradesRow> | null>(`trade${trade.id}`, null);
-  const editable = tradeLocal !== null;
-
   const tradeCombined = { ...trade, ...tradeLocal };
+
+  const [d, setShowDetails] = useState(false);
+  const toggleDetails = () => setShowDetails((v) => !v);
+  const editable = tradeLocal !== null;
+  const showDetails = d || editable;
 
   const handleEdit = () => {
     setTradeLocal({});
@@ -100,20 +109,24 @@ function Row({ trade }: { trade: TradesRow }) {
   const handleCancel = () => {
     setTradeLocal(null);
   };
-  const toggleDetails = () => setShowDetails((v) => !v);
 
   const handleChange = (key: keyof TradesRow, value: unknown) => {
     setTradeLocal((prev) => ({
       ...prev,
-      risk: getTradeRisk(tradeCombined),
-      pnl: getTradePnl(tradeCombined),
+      risk: getTradeRisk({ ...trade, ...prev, [key]: value }),
+      pnl: getTradePnl({ ...trade, ...prev, [key]: value }),
       [key]: value,
     }));
   };
 
   return (
     <>
-      <tr>
+      <tr
+        style={{
+          background: showDetails ? 'var(--color-bg-highlight)' : undefined,
+          borderBottomColor: showDetails ? 'transparent' : undefined,
+        }}
+      >
         {columns.map((col) => {
           const render = col.render ?? ((row: TradesRow) => row[col.key]);
           return (
@@ -124,7 +137,7 @@ function Row({ trade }: { trade: TradesRow }) {
             </th>
           );
         })}
-        <th style={{ justifyItems: 'center' }}>
+        <th style={{ justifyItems: 'center', width: 100 }}>
           <div className="flex gap-1">
             {editable ? (
               <>
@@ -149,7 +162,7 @@ function Row({ trade }: { trade: TradesRow }) {
                   title="Details"
                   onClick={toggleDetails}
                 >
-                  <Info />
+                  {showDetails ? <Circle /> : <Info />}
                 </button>
                 {/* <button aria-label="Delete" title="Delete" onClick={handleDelete}>
               <Trash />
@@ -159,64 +172,25 @@ function Row({ trade }: { trade: TradesRow }) {
           </div>
         </th>
       </tr>
-      {(showDetails || editable) && (
-        <RowDetails
-          trade={tradeCombined}
-          editable={editable}
-          onChange={handleChange}
-        />
+      {showDetails && (
+        <tr>
+          <td
+            colSpan={columns.length + 1}
+            style={{
+              textAlign: 'left',
+              padding: '8px',
+              background: 'var(--color-bg-highlight)',
+            }}
+          >
+            <TradeDetails
+              trade={tradeCombined}
+              disabled={!editable}
+              onChange={handleChange}
+            />
+          </td>
+        </tr>
       )}
     </>
-  );
-}
-
-function RowDetails({
-  trade,
-  editable,
-  onChange,
-}: {
-  trade: TradesRow;
-  editable: boolean;
-  onChange: (key: keyof TradesRow, value: unknown) => void;
-}) {
-  return (
-    <tr>
-      <td colSpan={columns.length + 1} style={{ padding: '0 8px' }}>
-        <div className="flex flex-col gap-1">
-          {editable ? (
-            <>
-              <Input
-                placeholder="plan"
-                value={trade.plan}
-                onChange={(v) => onChange('plan', v)}
-              />
-              <Input
-                placeholder="review"
-                value={trade.review}
-                onChange={(v) => onChange('review', v)}
-              />
-              <Input
-                placeholder="https://www.tradingview.com/x/y4rc4UTW/"
-                value={trade.url1}
-                onChange={(v) => onChange('url1', v)}
-              />
-              <Input
-                placeholder="https://www.tradingview.com/x/y4rc4UTW/"
-                value={trade.url2}
-                onChange={(v) => onChange('url2', v)}
-              />
-            </>
-          ) : (
-            <>
-              <span>{trade.plan}</span>
-              <span>{trade.review}</span>
-              <span>{trade.url1}</span>
-              <span>{trade.url2}</span>
-            </>
-          )}
-        </div>
-      </td>
-    </tr>
   );
 }
 
@@ -243,6 +217,7 @@ const columns: {
     render: (row, editable, onChange) =>
       editable ? (
         <Input
+          name="symbol"
           placeholder={row.symbol}
           list="data-list-symbols"
           onChange={onChange}
@@ -258,6 +233,7 @@ const columns: {
     render: (row, editable, onChange) => {
       return editable ? (
         <Input
+          name="time_frame"
           placeholder={row.time_frame}
           list="data-list-time_frames"
           onChange={onChange}
@@ -267,14 +243,22 @@ const columns: {
       );
     },
   },
-  { label: 'L / S', key: 'long_short', style: { width: 64 } },
+  {
+    label: 'L / S',
+    key: 'long_short',
+    style: { width: 64 },
+    render: (row) => (
+      // long = green, short = red
+      <span className={row.long_short}>{row.long_short}</span>
+    ),
+  },
   {
     label: 'ACCOUNT',
     key: 'account',
     style: { minWidth: 100, textAlign: 'right' },
     render(row, editable, onChange) {
       return editable ? (
-        <InputNumber value={row.account} onChange={onChange} />
+        <InputNumber name="account" value={row.account} onChange={onChange} />
       ) : (
         toUSD(row.account)
       );
@@ -286,7 +270,7 @@ const columns: {
     style: { minWidth: 100, textAlign: 'right' },
     render(row, editable, onChange) {
       return editable ? (
-        <InputNumber value={row.amount} onChange={onChange} />
+        <InputNumber name="amount" value={row.amount} onChange={onChange} />
       ) : (
         toUSD(row.amount)
       );
@@ -298,9 +282,9 @@ const columns: {
     style: { minWidth: 100, textAlign: 'right' },
     render(row, editable, onChange) {
       return editable ? (
-        <InputNumber value={row.stop} onChange={onChange} />
+        <InputNumber name="stop" value={row.stop} onChange={onChange} />
       ) : (
-        row.stop
+        toUSD(row.stop)
       );
     },
   },
@@ -310,9 +294,9 @@ const columns: {
     style: { minWidth: 100, textAlign: 'right' },
     render(row, editable, onChange) {
       return editable ? (
-        <InputNumber value={row.entry} onChange={onChange} />
+        <InputNumber name="entry" value={row.entry} onChange={onChange} />
       ) : (
-        row.entry
+        toUSD(row.entry)
       );
     },
   },
@@ -322,9 +306,9 @@ const columns: {
     style: { minWidth: 100, textAlign: 'right' },
     render(row, editable, onChange) {
       return editable ? (
-        <InputNumber value={row.target} onChange={onChange} />
+        <InputNumber name="target" value={row.target} onChange={onChange} />
       ) : (
-        row.target
+        toUSD(row.target)
       );
     },
   },
@@ -334,17 +318,31 @@ const columns: {
     style: { minWidth: 100, textAlign: 'right' },
     render(row, editable, onChange) {
       return editable ? (
-        <InputNumber value={row.exit} onChange={onChange} />
+        <InputNumber name="exit" value={row.exit} onChange={onChange} />
       ) : (
-        row.exit
+        toUSD(row.exit)
       );
     },
   },
   {
     label: 'FEES',
     key: 'fees',
-    style: { width: 64, textAlign: 'right' },
-    render: (row) => toUSD(row.fees),
+    style: { width: 100, textAlign: 'right' },
+    render: (row, editable, onChange) => {
+      const percentage = row.fees ? (row.fees * 100).toFixed(2) + '%' : '';
+      return editable ? (
+        <InputNumber
+          name="fees"
+          min="0"
+          max="0.1"
+          step="0.01"
+          value={(row.fees || 0) * 100}
+          onChange={(value) => onChange(value / 100)}
+        />
+      ) : (
+        percentage
+      );
+    },
   },
   {
     label: 'RISK',
@@ -356,6 +354,11 @@ const columns: {
     label: 'PNL',
     key: 'pnl',
     style: { width: 64, textAlign: 'right' },
-    render: (row) => toUSD(row.pnl),
+    render: (row) => (
+      // -1 = red, 0 = currentColor, 1 = green
+      <span className={'number' + Math.sign(row.pnl || 0)}>
+        {toUSD(row.pnl)}
+      </span>
+    ),
   },
 ];

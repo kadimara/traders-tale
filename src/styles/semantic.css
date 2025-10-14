@@ -288,12 +288,19 @@ table {
   overflow-x: auto;
   text-align: left;
   width: 100%;
+
+  border-collapse: collapse;
+}
+
+tr {
+  border-bottom: 0.1rem solid var(--color-border);
 }
 
 td,
 th {
-  border-bottom: 0.1rem solid var(--color-border);
+  /* border-bottom: 0.1rem solid var(--color-border); */
   text-align: center;
+  padding: 0 4px;
 }
 
 thead tr {

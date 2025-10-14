@@ -3,5 +3,12 @@ export function round(value: number, fractionDigits?: number) {
 }
 
 export function toUSD(value: number | null | undefined) {
-  return value?.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+  return (
+    value?.toLocaleString('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 8,
+      minimumFractionDigits: 0,
+    }) || ''
+  );
 }

@@ -15,9 +15,11 @@ export function InputNumber({
   };
   return (
     <input
+      onFocus={(e) => e.target.select()}
       {...props}
       type="number"
       value={typeof value == 'number' ? value : ''}
+      style={{ textAlign: 'end' }}
       onChange={handleChange}
     />
   );

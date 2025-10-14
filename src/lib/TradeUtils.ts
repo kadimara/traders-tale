@@ -72,8 +72,10 @@ export function getTradePnl({
   if (!exit || !entry) {
     return 0;
   }
+
+  const feesPayed = (fees ?? 0) * amount; // entry and exit fees
   const pnl = round(amount - (exit / entry) * amount, 2);
-  return (long_short == 'long' ? pnl * -1 : pnl) - (fees || 0);
+  return (long_short == 'long' ? pnl * -1 : pnl) - feesPayed;
 }
 
 // export function getRiskRewardRatio(entry: number, takeProfit: number, stopLoss: number): string {
@@ -87,3 +89,15 @@ export function getTradePnl({
 
 // 	return numerator + ' / ' + denominator;
 // }
+
+export function getImageSrcFromTradingViewUrl(url: string) {
+  if (!url) {
+    return '';
+  }
+  const results = url.match(
+    /(?<=https:\/\/www.tradingview.com\/x\/)(.*)(?=\/)/g
+  );
+  const result = results?.[0];
+  const char = result?.[0]?.toLowerCase();
+  return `https://s3.tradingview.com/snapshots/${char}/${result}.png`;
+}

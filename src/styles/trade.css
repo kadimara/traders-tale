@@ -1,0 +1,14 @@
+:root {
+  --color-long: light-dark(#089981, #089981);
+  --color-short: light-dark(#f23645, #f23645);
+}
+
+.long,
+.number1 {
+  color: var(--color-long);
+}
+
+.short,
+.number-1 {
+  color: var(--color-short);
+}
