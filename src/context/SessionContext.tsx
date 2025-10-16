@@ -6,7 +6,7 @@ import {
   useState,
   type PropsWithChildren,
 } from 'react';
-import { useNavigate, useNavigation } from 'react-router';
+import { useNavigate } from 'react-router';
 import { supabase } from '../lib/database/SupabaseClient';
 
 type SessionContextType = {

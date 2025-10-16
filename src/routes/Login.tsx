@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '../lib/database/SupabaseClient';
 import { useSessionContext } from '../context/SessionContext';
 import { useNavigate } from 'react-router';

@@ -1,8 +1,8 @@
 import { Route, Routes } from 'react-router';
 import { SessionProvider } from './context/SessionContext';
-import Layout from './Layout';
 import Dashboard from './routes/Dashboard';
 import Home from './routes/Home';
+import Layout from './routes/Layout';
 import Login from './routes/Login';
 
 export default function App() {
