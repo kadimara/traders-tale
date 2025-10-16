@@ -6,6 +6,7 @@ import {
   useState,
   type PropsWithChildren,
 } from 'react';
+import { useNavigate, useNavigation } from 'react-router';
 import { supabase } from '../lib/database/SupabaseClient';
 
 type SessionContextType = {
@@ -16,6 +17,7 @@ type SessionContextType = {
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
 
 export function SessionProvider({ children }: PropsWithChildren) {
+  const navigate = useNavigate();
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -24,6 +26,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
+      session ?? navigate('/login');
     });
 
     // Listen for changes (login/logout)
@@ -31,6 +34,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      session ?? navigate('/login');
     });
 
     return () => subscription.unsubscribe();
