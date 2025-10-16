@@ -1,9 +1,9 @@
-import { LogOut } from 'react-feather';
+import { Book, LogOut } from 'react-feather';
 import { useSessionContext } from './context/SessionContext';
+import { TradesProvider } from './context/TradesContext';
 import Auth from './features/auth/auth';
 import { TradesTable } from './features/tradestable/TradesTable';
 import { supabase } from './lib/database/SupabaseClient';
-import { TradesProvider } from './context/TradesContext';
 
 export default function App() {
   const { session, loading } = useSessionContext();
@@ -17,18 +17,21 @@ export default function App() {
 
   return (
     <TradesProvider>
-      <div className="flex flex-col gap-1">
-        <div className="flex flex-row items-center gap-1">
-          <h1 className="flex-1">
-            Welcome,&nbsp;
-            {session.user.user_metadata['display_name'] || session.user.email}
-          </h1>
-          <button onClick={() => supabase.auth.signOut()}>
-            logout <LogOut />
-          </button>
-        </div>
+      <header className="flex gap-1 items-center">
+        <Book size={32} />
+        <a style={{ fontWeight: 600 }}>TRADES</a>
+        <a>DASHBOARD</a>
+        {/* <a>PROFILE</a> */}
+        <span className="flex-1" />
+        {session?.user.user_metadata['display_name'] || session?.user.email}
+        <button onClick={() => supabase.auth.signOut()}>
+          <LogOut /> Logout
+        </button>
+      </header>
+      <main>
         <TradesTable />
-      </div>
+      </main>
+      <footer></footer>
     </TradesProvider>
   );
 }
