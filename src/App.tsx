@@ -1,20 +1,23 @@
-import { Route, Routes } from 'react-router';
+import { Router } from './components/Router';
 import { SessionProvider } from './context/SessionContext';
-import Dashboard from './routes/Dashboard';
+import { TradesProvider } from './context/TradesContext';
 import Home from './routes/Home';
 import Layout from './routes/Layout';
 import Login from './routes/Login';
+import Trades from './routes/Trades';
 
 export default function App() {
   return (
     <SessionProvider>
-      <Routes>
-        <Route element={<Layout />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-        </Route>
-        <Route path="/login" element={<Login />} />
-      </Routes>
+      <Router>
+        <TradesProvider>
+          <Layout>
+            <Router path="" element={<Home />} />
+            <Router path="trades" element={<Trades />} />
+          </Layout>
+        </TradesProvider>
+      </Router>
+      <Router path="login" element={<Login />} />
     </SessionProvider>
   );
 }

@@ -56,7 +56,7 @@ body {
 }
 
 header {
-  padding: 8px 16px;
+  padding: 16px;
 
   background: var(--color-bg-transparent);
   backdrop-filter: blur(4px);
@@ -93,6 +93,7 @@ input[type='submit'] {
   border-radius: var(--border-radius);
   color: var(--color-main-text);
   font-weight: 700;
+  padding: 2px 6px;
 }
 
 .button:hover:not(:disabled),
@@ -327,7 +328,7 @@ td,
 th {
   /* border-bottom: 0.1rem solid var(--color-border); */
   text-align: center;
-  padding: 0 4px;
+  padding: 2px 6px;
 }
 
 thead tr {

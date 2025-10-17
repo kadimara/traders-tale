@@ -1,18 +1,17 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../lib/database/SupabaseClient';
+import { navigate } from '../components/Router';
 import { useSessionContext } from '../context/SessionContext';
-import { useNavigate } from 'react-router';
+import { supabase } from '../lib/database/SupabaseClient';
 
 export default function Login() {
-  const navigate = useNavigate();
   const { session } = useSessionContext();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    session && navigate('/');
-  }, [session, navigate]);
+    session && navigate('');
+  }, [session]);
 
   // async function handleSignUp() {
   //   setLoading(true);
