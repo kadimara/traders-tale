@@ -20,7 +20,7 @@
   --color-main-highlight: light-dark(#b982da, #b3b3b3);
   --color-main-text: light-dark(var(--color-bg), var(--color-bg));
 
-  --border-radius: 2px;
+  --border-radius: 4px;
 }
 
 /* Set box-sizing globally to handle padding and border widths */

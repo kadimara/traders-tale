@@ -1,3 +1,12 @@
+import ModulePNL from '../features/modules/ModulePNL';
+
 export default function Home() {
-  return <h1>Dashboard</h1>;
+  return (
+    <main
+      className="flex flex-col gap-1"
+      style={{ width: '90%', margin: 'auto' }}
+    >
+      <ModulePNL />
+    </main>
+  );
 }

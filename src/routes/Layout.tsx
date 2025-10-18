@@ -17,11 +17,15 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
         Welcome,{' '}
         {session?.user.user_metadata['display_name'] || session?.user.email}
         <span className="flex-1" />
-        <button onClick={() => supabase.auth.signOut()}>
-          <LogOut /> Logout
+        <button
+          onClick={() => supabase.auth.signOut()}
+          title="logout"
+          aria-label="logout"
+        >
+          <LogOut />
         </button>
       </header>
-      <main>{children}</main>
+      {children}
       <footer></footer>
     </TradesProvider>
   );
