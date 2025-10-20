@@ -48,9 +48,12 @@ export function getTradeRisk(trade: TradesRow): number {
   return round(ratio * risk, 4);
 }
 
-// export function getTradeLongShort(entryPrice: number, stopLoss: number):'long' | 'short' {
-// 	return stopLoss < entryPrice ? 'long' : 'short';
-// }
+export function getTradeLongShort({
+  stop,
+  entry,
+}: TradesRow): 'long' | 'short' {
+  return stop < entry ? 'long' : 'short';
+}
 
 // export function getTradePnL({ long_short, entry, exit }: TradesRow): number {
 //   if (!entry) {

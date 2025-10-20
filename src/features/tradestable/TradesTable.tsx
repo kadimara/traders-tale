@@ -9,7 +9,11 @@ import {
 } from '../../hooks/useLocalStorage';
 import type { TradesRow, TradesUpdate } from '../../lib/database/api';
 import { toUSD } from '../../lib/MathUtils';
-import { getTradePnl, getTradeRisk } from '../../lib/TradeUtils';
+import {
+  getTradeLongShort,
+  getTradePnl,
+  getTradeRisk,
+} from '../../lib/TradeUtils';
 import { TradeDetails } from './TradeDetails';
 
 export function TradesTable() {
@@ -113,6 +117,7 @@ function Row({ trade }: { trade: TradesRow }) {
   const handleChange = (key: keyof TradesRow, value: unknown) => {
     setTradeLocal((prev) => ({
       ...prev,
+      long_short: getTradeLongShort({ ...trade, ...prev, [key]: value }),
       risk: getTradeRisk({ ...trade, ...prev, [key]: value }),
       pnl: getTradePnl({ ...trade, ...prev, [key]: value }),
       [key]: value,
