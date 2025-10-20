@@ -115,13 +115,19 @@ function Row({ trade }: { trade: TradesRow }) {
   };
 
   const handleChange = (key: keyof TradesRow, value: unknown) => {
-    setTradeLocal((prev) => ({
-      ...prev,
-      long_short: getTradeLongShort({ ...trade, ...prev, [key]: value }),
-      risk: getTradeRisk({ ...trade, ...prev, [key]: value }),
-      pnl: getTradePnl({ ...trade, ...prev, [key]: value }),
-      [key]: value,
-    }));
+    setTradeLocal((prev) => {
+      const local = { ...prev, [key]: value };
+      const combined = { ...trade, ...local };
+      const long_short = getTradeLongShort({ ...combined });
+      const risk = getTradeRisk({ ...combined, long_short });
+      const pnl = getTradePnl({ ...combined, risk, long_short });
+      return {
+        ...local,
+        long_short,
+        risk,
+        pnl,
+      };
+    });
   };
 
   return (
