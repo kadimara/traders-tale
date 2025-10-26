@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import { Input } from '../../components/Input';
-import type { TradesRow } from '../../lib/database/api';
-import { getImageSrcFromTradingViewUrl } from '../../lib/TradeUtils';
+import type { TradesRow } from '../lib/database/api';
+import { getImageSrcFromTradingViewUrl } from '../lib/TradeUtils';
+import { Input } from './Input';
 
 export function TradeDetails({
   trade,

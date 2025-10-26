@@ -5,29 +5,45 @@ import {
   type Time,
 } from 'lightweight-charts';
 import { useEffect, useRef } from 'react';
-import { useTradesContext } from '../../context/TradesContext';
+import { useTradesContext } from '../context/TradesContext';
+
+const getDaysArray = (startDate: Date, endDate: Date) => {
+  const days: string[] = [];
+  let currentDate = startDate;
+
+  while (currentDate <= endDate) {
+    days.push(currentDate.toISOString().split('T')[0]);
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  return days;
+};
+
+const today = new Date();
+const startOfWeek = new Date(today);
+startOfWeek.setDate(today.getDate() - today.getDay() - 14); // Start of last week
+const endOfWeek = new Date(today);
+endOfWeek.setDate(today.getDate() - today.getDay()); // End of current week
+
+const weekDays = getDaysArray(startOfWeek, endOfWeek);
 
 export default function ModulePNL() {
   const ref = useRef<HTMLDivElement>(null);
   const { trades } = useTradesContext();
 
-  const data = trades
-    .reduce((acc, trade) => {
-      const time = new Date(trade.created_at).toISOString().split('T')[0];
-      const value = trade.pnl ?? 0;
-      const index = acc.findIndex((d) => d.time === time);
-      if (index !== -1) {
-        acc[index].value += value ?? 0;
-        acc[index].color = acc[index].value ? '#089981' : '#f23645';
-        return acc;
-      } else {
-        acc.push({ time, value, color: value >= 0 ? '#089981' : '#f23645' });
-        return acc;
-      }
-    }, [] as { time: Time; value: number; color: string }[])
-    .reverse();
+  const tradesByDay = weekDays.map((day) => {
+    const totalValue = trades.reduce((acc, trade) => {
+      const tradeDate = new Date(trade.created_at).toISOString().split('T')[0];
+      return tradeDate === day ? acc + (trade.pnl ?? 0) : acc;
+    }, 0);
+    return {
+      time: day,
+      value: totalValue,
+      color: totalValue >= 0 ? '#089981' : '#f23645',
+    };
+  });
 
-  const totalPnl = data.reduce((acc, trade) => acc + trade.value, 0);
+  const totalPnl = tradesByDay.reduce((acc, trade) => acc + trade.value, 0);
 
   useEffect(() => {
     if (ref.current === null) {
@@ -44,22 +60,18 @@ export default function ModulePNL() {
       },
     });
 
-    histogramSeries.setData(data);
-    chart.timeScale().setVisibleLogicalRange({
-      from: 0,
-      to: 6,
-    });
-    // chart.timeScale().fitContent();
-  }, [data]);
+    histogramSeries.setData(tradesByDay);
+    chart.timeScale().fitContent();
+  }, [tradesByDay]);
 
   return (
     <div
       className="flex flex-col"
       style={{
         alignSelf: 'flex-start',
-        padding: 8,
-        border: '1px solid var(--color-border)',
+        padding: 16,
         borderRadius: 'var(--border-radius)',
+        background: 'var(--color-bg-highlight)',
       }}
     >
       <h3 style={{ margin: 0 }}>
@@ -72,7 +84,9 @@ export default function ModulePNL() {
           {totalPnl.toFixed(2)} USD
         </strong>
       </h3>
-      <span style={{ color: 'gray' }}>10/18/2025</span>
+      <span style={{ color: 'gray' }}>
+        {tradesByDay[tradesByDay.length - 1].time}
+      </span>
       <div ref={ref}></div>
     </div>
   );
@@ -93,4 +107,6 @@ const config = {
       color: '#333333', // horizontal grid lines
     },
   },
+  handleScroll: false,
+  handleScale: false,
 };

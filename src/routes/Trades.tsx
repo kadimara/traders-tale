@@ -1,4 +1,4 @@
-import { TradesTable } from '../features/tradestable/TradesTable';
+import { TradesTable } from '../components/TradesTable';
 
 export default function Trades() {
   return (

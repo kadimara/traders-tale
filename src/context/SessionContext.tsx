@@ -25,15 +25,15 @@ export function SessionProvider({ children }: PropsWithChildren) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
-      session ?? navigate('login');
+      session ?? navigate('auth');
     });
 
-    // Listen for changes (login/logout)
+    // Listen for changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      session ?? navigate('login');
+      session ?? navigate('auth');
     });
 
     return () => subscription.unsubscribe();

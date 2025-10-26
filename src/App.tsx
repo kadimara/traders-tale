@@ -1,9 +1,9 @@
 import { Router } from './components/Router';
 import { SessionProvider } from './context/SessionContext';
 import { TradesProvider } from './context/TradesContext';
+import Auth from './routes/Auth';
 import Home from './routes/Home';
 import Layout from './routes/Layout';
-import Login from './routes/Login';
 import Trades from './routes/Trades';
 
 export default function App() {
@@ -17,7 +17,7 @@ export default function App() {
           </Layout>
         </TradesProvider>
       </Router>
-      <Router path="login" element={<Login />} />
+      <Router path="auth" element={<Auth />} />
     </SessionProvider>
   );
 }

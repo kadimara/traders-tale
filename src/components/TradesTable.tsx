@@ -1,19 +1,16 @@
 import { useState, type CSSProperties, type ReactNode } from 'react';
 import { Circle, Edit, Info, Plus, Save, X } from 'react-feather';
-import { Input } from '../../components/Input';
-import { InputNumber } from '../../components/InputNumber';
-import { useTradesContext } from '../../context/TradesContext';
-import {
-  setLocalStorageItem,
-  useLocalStorage,
-} from '../../hooks/useLocalStorage';
-import type { TradesRow, TradesUpdate } from '../../lib/database/api';
-import { toUSD } from '../../lib/MathUtils';
+import { useTradesContext } from '../context/TradesContext';
+import { setLocalStorageItem, useLocalStorage } from '../hooks/useLocalStorage';
+import type { TradesRow, TradesUpdate } from '../lib/database/api';
+import { toUSD } from '../lib/MathUtils';
 import {
   getTradeLongShort,
   getTradePnl,
   getTradeRisk,
-} from '../../lib/TradeUtils';
+} from '../lib/TradeUtils';
+import { Input } from './Input';
+import { InputNumber } from './InputNumber';
 import { TradeDetails } from './TradeDetails';
 
 export function TradesTable() {

@@ -1,2 +1,1 @@
-# trading-journal
-
+# traders-tale

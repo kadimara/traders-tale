@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from 'react';
 
-export const basePath = '/trading-journal/';
+export const basePath = '/traders-tale/';
 
 type RouterProps = {
   path?: string;

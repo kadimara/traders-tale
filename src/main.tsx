@@ -5,6 +5,15 @@ import './styles/semantic.css';
 import './styles/trade.css';
 import './styles/utils.css';
 
+(function () {
+  var redirect = sessionStorage.redirect;
+  console.log('redirect', redirect);
+  if (redirect) {
+    delete sessionStorage.redirect;
+    history.replaceState(null, '', redirect);
+  }
+})();
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
