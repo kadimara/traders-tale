@@ -3,18 +3,13 @@
   <head>
     <meta charset="utf-8" />
     <script type="text/javascript">
-      // Redirect all 404 requests to index.html but preserve the path
-      var redirect = sessionStorage.redirect;
-      delete sessionStorage.redirect;
-      if (redirect && redirect !== location.href) {
-        history.replaceState(null, null, redirect);
-      }
+      // This script runs when a 404 happens
+      // Save the current URL path and query
+      sessionStorage.redirect =
+        location.pathname + location.search + location.hash;
+      // Redirect to the base path (where index.html is)
+      window.location.replace('/');
     </script>
   </head>
-  <body>
-    <script type="text/javascript">
-      sessionStorage.redirect = location.href;
-      window.location.replace('/trading-journal/');
-    </script>
-  </body>
+  <body></body>
 </html>
