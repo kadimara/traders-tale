@@ -1,9 +1,4 @@
-import {
-  ColorType,
-  createChart,
-  HistogramSeries,
-  type Time,
-} from 'lightweight-charts';
+import { ColorType, createChart, HistogramSeries } from 'lightweight-charts';
 import { useEffect, useRef } from 'react';
 import { useTradesContext } from '../context/TradesContext';
 
