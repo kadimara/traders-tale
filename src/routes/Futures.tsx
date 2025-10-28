@@ -1,6 +1,6 @@
 import { TradesTable } from '../components/TradesTable';
 
-export default function Trades() {
+export default function Futures() {
   return (
     <main>
       <TradesTable />

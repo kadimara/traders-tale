@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import type { TradesRow } from '../lib/database/api';
-import { getImageSrcFromTradingViewUrl } from '../lib/TradeUtils';
+import type { TradesRow } from '@lib/database/api';
+import { getImageSrcFromTradingViewUrl } from '@lib/utils/TradeUtils';
 import { Input } from './Input';
 
 export function TradeDetails({

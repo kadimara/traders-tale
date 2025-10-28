@@ -1,5 +1,5 @@
-import type { TradesRow } from './database/api';
-import { round } from './MathUtils';
+import type { TradesRow } from '@lib/database/api';
+import { round } from '@lib/utils/MathUtils';
 
 // export function getTradesPnl(trades: TradesRow[]) {
 // 	return parseFloat(

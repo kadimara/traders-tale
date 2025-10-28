@@ -56,12 +56,11 @@ body {
 }
 
 header {
-  padding: 16px;
+  padding: 8px;
 
   background: var(--color-bg-transparent);
   backdrop-filter: blur(4px);
   position: sticky;
-  border-bottom: 1px solid var(--color-border);
   top: 0;
 }
 main {
@@ -272,7 +271,8 @@ a:hover {
 }
 
 header a {
-  padding: 4px 2px;
+  padding: 8px;
+  text-decoration: none;
 }
 
 header a:focus,
@@ -320,19 +320,31 @@ table {
   border-collapse: collapse;
 }
 
-tr {
+/* tr {
   border-bottom: 0.1rem solid var(--color-border);
-}
+} */
 
 td,
 th {
   /* border-bottom: 0.1rem solid var(--color-border); */
   text-align: center;
-  padding: 2px 6px;
+  padding: 6px;
+}
+
+td:first-child,
+th:first-child {
+  border-top-left-radius: var(--border-radius);
+  border-bottom-left-radius: var(--border-radius);
+}
+td:last-child,
+th:last-child {
+  border-top-right-radius: var(--border-radius);
+  border-bottom-right-radius: var(--border-radius);
 }
 
 thead tr {
   text-align: center;
+  background-color: var(--color-bg-highlight);
 }
 tbody tr:hover {
   background-color: var(--color-bg-highlight);

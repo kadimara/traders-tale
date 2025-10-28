@@ -1,4 +1,4 @@
-import type { Database } from './database.types';
+import type { Database } from '@lib/types/database.types';
 import { supabase } from './SupabaseClient';
 
 export type TradesRow = Database['public']['Tables']['trades']['Row'];

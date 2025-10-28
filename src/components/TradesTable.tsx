@@ -2,13 +2,13 @@ import { useState, type CSSProperties, type ReactNode } from 'react';
 import { Circle, Edit, Info, Plus, Save, X } from 'react-feather';
 import { useTradesContext } from '../context/TradesContext';
 import { setLocalStorageItem, useLocalStorage } from '../hooks/useLocalStorage';
-import type { TradesRow, TradesUpdate } from '../lib/database/api';
-import { toUSD } from '../lib/MathUtils';
+import type { TradesRow, TradesUpdate } from '@lib/database/api';
+import { toUSD } from '@lib/utils/MathUtils';
 import {
   getTradeLongShort,
   getTradePnl,
   getTradeRisk,
-} from '../lib/TradeUtils';
+} from '@lib/utils/TradeUtils';
 import { Input } from './Input';
 import { InputNumber } from './InputNumber';
 import { TradeDetails } from './TradeDetails';
