@@ -8,7 +8,7 @@ import {
   type TradesInsert,
   type TradesRow,
   type TradesUpdate,
-} from '../lib/database/api';
+} from '@lib/database/api';
 
 type TradesContextType = {
   trades: TradesRow[];

@@ -2,7 +2,7 @@ import { Book, LogOut } from 'react-feather';
 import { Link } from '../components/Router';
 import { useSessionContext } from '../context/SessionContext';
 import { TradesProvider } from '../context/TradesContext';
-import { supabase } from '../lib/database/SupabaseClient';
+import { supabase } from '@lib/database/SupabaseClient';
 
 export default function Layout({ children }: { children?: React.ReactNode }) {
   const { session } = useSessionContext();
@@ -11,7 +11,8 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
       <header className="flex gap-1 items-center">
         <Book size={24} />
         <Link to="">DASHBOARD</Link>
-        <Link to="trades">TRADES</Link>
+        <Link to="spot">SPOT</Link>
+        <Link to="futures">FUTURES</Link>
         {/* <a>PROFILE</a> */}
         <span className="flex-1" />
         Welcome,{' '}

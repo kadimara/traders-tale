@@ -7,7 +7,7 @@ import {
   type PropsWithChildren,
 } from 'react';
 import { navigate } from '../components/Router';
-import { supabase } from '../lib/database/SupabaseClient';
+import { supabase } from '@lib/database/SupabaseClient';
 
 type SessionContextType = {
   session: Session | null;

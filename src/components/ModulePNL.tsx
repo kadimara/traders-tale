@@ -1,6 +1,7 @@
 import { ColorType, createChart, HistogramSeries } from 'lightweight-charts';
 import { useEffect, useRef } from 'react';
 import { useTradesContext } from '../context/TradesContext';
+import { toUSD } from '@lib/utils/MathUtils';
 
 const getDaysArray = (startDate: Date, endDate: Date) => {
   const days: string[] = [];
@@ -16,9 +17,9 @@ const getDaysArray = (startDate: Date, endDate: Date) => {
 
 const today = new Date();
 const startOfWeek = new Date(today);
-startOfWeek.setDate(today.getDate() - today.getDay() - 14); // Start of last week
+startOfWeek.setDate(today.getDate() - today.getDay() - 6); // Start of last week
 const endOfWeek = new Date(today);
-endOfWeek.setDate(today.getDate() - today.getDay()); // End of current week
+endOfWeek.setDate(today.getDate() - today.getDay() + 7); // End of current week
 
 const weekDays = getDaysArray(startOfWeek, endOfWeek);
 
@@ -38,7 +39,7 @@ export default function ModulePNL() {
     };
   });
 
-  const totalPnl = tradesByDay.reduce((acc, trade) => acc + trade.value, 0);
+  const lastDayWithPnl = [...tradesByDay].reverse().find((t) => t.value != 0);
 
   useEffect(() => {
     if (ref.current === null) {
@@ -70,18 +71,15 @@ export default function ModulePNL() {
       }}
     >
       <h3 style={{ margin: 0 }}>
-        Total PNL
+        Daily PNL
         <strong
-          className={'number' + Math.sign(totalPnl)}
+          className={'number' + Math.sign(lastDayWithPnl?.value ?? 0)}
           style={{ float: 'inline-end' }}
         >
-          {totalPnl > 0 ? '+' : ''}
-          {totalPnl.toFixed(2)} USD
+          {toUSD(lastDayWithPnl?.value)}
         </strong>
       </h3>
-      <span style={{ color: 'gray' }}>
-        {tradesByDay[tradesByDay.length - 1].time}
-      </span>
+      <span style={{ color: 'gray' }}>{lastDayWithPnl?.time}</span>
       <div ref={ref}></div>
     </div>
   );

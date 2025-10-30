@@ -2,9 +2,10 @@ import { Router } from './components/Router';
 import { SessionProvider } from './context/SessionContext';
 import { TradesProvider } from './context/TradesContext';
 import Auth from './routes/Auth';
+import Futures from './routes/Futures';
 import Home from './routes/Home';
 import Layout from './routes/Layout';
-import Trades from './routes/Trades';
+import Spot from './routes/Spot';
 
 export default function App() {
   return (
@@ -13,7 +14,8 @@ export default function App() {
         <TradesProvider>
           <Layout>
             <Router path="" element={<Home />} />
-            <Router path="trades" element={<Trades />} />
+            <Router path="spot" element={<Spot />} />
+            <Router path="futures" element={<Futures />} />
           </Layout>
         </TradesProvider>
       </Router>
