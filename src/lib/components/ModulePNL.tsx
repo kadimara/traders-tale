@@ -23,7 +23,7 @@ endOfWeek.setDate(today.getDate() - today.getDay() + 7); // End of current week
 
 const weekDays = getDaysArray(startOfWeek, endOfWeek);
 
-export default function ModulePNL() {
+export function ModulePNL() {
   const ref = useRef<HTMLDivElement>(null);
   const { trades } = useTradesContext();
 
@@ -70,15 +70,15 @@ export default function ModulePNL() {
         background: 'var(--color-bg-highlight)',
       }}
     >
-      <h3 style={{ margin: 0 }}>
-        Daily PNL
+      <h4 style={{ margin: 0 }}>
+        Daily P&L
         <strong
           className={'number' + Math.sign(lastDayWithPnl?.value ?? 0)}
           style={{ float: 'inline-end' }}
         >
           {toUSD(lastDayWithPnl?.value)}
         </strong>
-      </h3>
+      </h4>
       <span style={{ color: 'gray' }}>{lastDayWithPnl?.time}</span>
       <div ref={ref}></div>
     </div>

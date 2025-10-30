@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { navigate } from '../components/Router';
-import { useSessionContext } from '../context/SessionContext';
+import { navigate } from '../lib/components/Router';
+import { useSessionContext } from '../lib/context/SessionContext';
 import { supabase } from '@lib/database/SupabaseClient';
 
 export default function Auth() {

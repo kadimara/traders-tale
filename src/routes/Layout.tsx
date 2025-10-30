@@ -1,7 +1,7 @@
 import { Book, LogOut } from 'react-feather';
-import { Link } from '../components/Router';
-import { useSessionContext } from '../context/SessionContext';
-import { TradesProvider } from '../context/TradesContext';
+import { Link } from '../lib/components/Router';
+import { useSessionContext } from '../lib/context/SessionContext';
+import { TradesProvider } from '../lib/context/TradesContext';
 import { supabase } from '@lib/database/SupabaseClient';
 
 export default function Layout({ children }: { children?: React.ReactNode }) {

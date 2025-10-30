@@ -1,6 +1,6 @@
-import { Router } from './components/Router';
-import { SessionProvider } from './context/SessionContext';
-import { TradesProvider } from './context/TradesContext';
+import { Router } from './lib/components/Router';
+import { SessionProvider } from './lib/context/SessionContext';
+import { TradesProvider } from './lib/context/TradesContext';
 import Auth from './routes/Auth';
 import Futures from './routes/Futures';
 import Home from './routes/Home';

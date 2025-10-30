@@ -1,4 +1,4 @@
-import ModulePNL from '../components/ModulePNL';
+import { ModulePNL } from '@lib/components/ModulePNL';
 
 export default function Home() {
   return (
