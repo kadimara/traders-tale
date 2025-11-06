@@ -28,10 +28,14 @@ export function ModulePNL() {
   const { trades } = useTradesContext();
 
   const tradesByDay = weekDays.map((day) => {
-    const totalValue = trades.reduce((acc, trade) => {
-      const tradeDate = new Date(trade.created_at).toISOString().split('T')[0];
-      return tradeDate === day ? acc + (trade.pnl ?? 0) : acc;
-    }, 0);
+    const totalValue = trades
+      .filter((t) => t.executed)
+      .reduce((acc, trade) => {
+        const tradeDate = new Date(trade.created_at)
+          .toISOString()
+          .split('T')[0];
+        return tradeDate === day ? acc + (trade.pnl ?? 0) : acc;
+      }, 0);
     return {
       time: day,
       value: totalValue,

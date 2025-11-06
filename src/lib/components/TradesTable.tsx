@@ -32,9 +32,9 @@ export function TradesTable() {
       entry: 0,
       long_short: 'long',
       stop: 0,
-      symbol: 'BTCUSD',
+      symbol: 'BTC',
       target: 0,
-      time_frame: '1h',
+      time_frame: '15m',
     });
     setLocalStorageItem(`trade${trade.id}`, {});
   };
@@ -133,6 +133,7 @@ function Row({ trade }: { trade: TradesRow }) {
         style={{
           background: showDetails ? 'var(--color-bg-highlight)' : undefined,
           borderBottomColor: showDetails ? 'transparent' : undefined,
+          color: !trade.executed && !editable ? 'gray' : undefined,
         }}
       >
         {columns.map((col) => {
@@ -364,9 +365,25 @@ const columns: {
     style: { width: 64, textAlign: 'right' },
     render: (row) => (
       // -1 = red, 0 = currentColor, 1 = green
-      <span className={'number' + Math.sign(row.pnl || 0)}>
+      <span className={row.executed ? 'number' + Math.sign(row.pnl || 0) : ''}>
         {toUSD(row.pnl)}
       </span>
     ),
+  },
+  {
+    label: 'EXEC',
+    key: 'executed',
+    style: { width: 64, textAlign: 'right' },
+    render: (row, editable, onChange) => {
+      return (
+        <input
+          type="checkbox"
+          name="executed"
+          checked={row.executed}
+          disabled={!editable}
+          onChange={(e) => onChange(e.target.checked)}
+        />
+      );
+    },
   },
 ];
