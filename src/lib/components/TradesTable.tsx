@@ -20,14 +20,19 @@ export function TradesTable() {
   const tradesByMonth = trades?.reduce((acc, trade) => {
     const d = new Date(trade.created_at);
     const key = d.toISOString().slice(0, 7); // YYYY-MM
-    const label = d.toLocaleString(undefined, { year: 'numeric', month: 'long' }); // e.g. "November 2025"
+    const label = d.toLocaleString(undefined, {
+      year: 'numeric',
+      month: 'long',
+    }); // e.g. "November 2025"
     if (!acc[key]) acc[key] = { label, trades: [] as TradesRow[] };
     acc[key].trades.push(trade);
     return acc;
   }, {} as Record<string, { label: string; trades: TradesRow[] }>);
 
   // sort months descending (newest first)
-  const monthKeys = tradesByMonth ? Object.keys(tradesByMonth).sort((a, b) => b.localeCompare(a)) : [];
+  const monthKeys = tradesByMonth
+    ? Object.keys(tradesByMonth).sort((a, b) => b.localeCompare(a))
+    : [];
 
   const handleAddTrade = async () => {
     const trade = await insertTrade({
@@ -47,7 +52,7 @@ export function TradesTable() {
     <>
       <table>
         <thead>
-          <tr>
+          <tr style={{ position: 'sticky', top: 10 }}>
             {columns.map((col) => (
               <th key={col.key}>{col.label}</th>
             ))}
@@ -59,35 +64,37 @@ export function TradesTable() {
           </tr>
         </thead>
         <tbody>
-          {monthKeys.length > 0 ? (
-            monthKeys.map((monthKey) => (
-              <tr key={`month-${monthKey}`}>
-                <td
-                  colSpan={columns.length + 1}
-                  style={{
-                    textAlign: 'left',
-                    padding: '8px',
-                    fontWeight: 700,
-                    background: 'var(--color-bg-highlight)',
-                  }}
-                >
-                  {tradesByMonth![monthKey].label}
-                </td>
-              </tr>
-            )).flatMap((monthRow, idx) => {
-              const key = monthKeys[idx];
-              // render the month header + its trades
-              return [
-                monthRow,
-                ...tradesByMonth![key].trades.map((trade) => (
-                  <Row key={trade.id} trade={trade} />
-                )),
-              ];
-            })
-          ) : (
-            // fallback: no trades
-            trades?.map((trade) => <Row key={trade.id} trade={trade} />)
-          )}
+          {monthKeys.length > 0
+            ? monthKeys
+                .map((monthKey, index) =>
+                  index != 0 ? (
+                    <tr key={`month-${monthKey}`}>
+                      <td
+                        colSpan={columns.length + 1}
+                        style={{
+                          textAlign: 'left',
+                          padding: '8px',
+                          fontWeight: 700,
+                          background: 'var(--color-bg-highlight)',
+                        }}
+                      >
+                        {tradesByMonth![monthKey].label}
+                      </td>
+                    </tr>
+                  ) : null
+                )
+                .flatMap((monthRow, idx) => {
+                  const key = monthKeys[idx];
+                  // render the month header + its trades
+                  return [
+                    monthRow,
+                    ...tradesByMonth![key].trades.map((trade) => (
+                      <Row key={trade.id} trade={trade} />
+                    )),
+                  ];
+                })
+            : // fallback: no trades
+              trades?.map((trade) => <Row key={trade.id} trade={trade} />)}
         </tbody>
       </table>
       <datalist id="data-list-symbols">
@@ -368,7 +375,7 @@ const columns: {
     key: 'fees',
     style: { width: 100, textAlign: 'right' },
     render: (row, editable, onChange) => {
-      const percentage = row.fees ? (row.fees * 100).toFixed(02) + '%' : '';
+      const percentage = row.fees ? (row.fees * 100).toFixed(2) + '%' : '';
       return editable ? (
         <InputNumber
           name="fees"
@@ -387,7 +394,7 @@ const columns: {
     label: 'RISK',
     key: 'risk',
     style: { width: 64, textAlign: 'right' },
-    render: (row) => (row.risk ? (row.risk * 100).toFixed(02) + '%' : ''),
+    render: (row) => (row.risk ? (row.risk * 100).toFixed(2) + '%' : ''),
   },
   {
     label: 'PNL',
