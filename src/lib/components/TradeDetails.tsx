@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { TradesRow } from '@lib/database/api';
+import type { TradesRow } from '@lib/database/TradesApi';
 import { getImageSrcFromTradingViewUrl } from '@lib/utils/TradeUtils';
 import { Input } from './Input';
 

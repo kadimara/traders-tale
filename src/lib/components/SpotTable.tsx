@@ -1,50 +1,26 @@
+import { useSpotContext } from '@lib/context/SpotContext';
+import type { TradesSpotRow } from '@lib/database/SpotApi';
+import type { TradesUpdate } from '@lib/database/TradesApi';
+import { toUSD } from '@lib/utils/MathUtils';
+import { getSpotPnl } from '@lib/utils/TradeUtils';
 import { useState, type CSSProperties, type ReactNode } from 'react';
 import { Circle, Edit, Info, Plus, Save, X } from 'react-feather';
-import { useTradesContext } from '../context/TradesContext';
 import { setLocalStorageItem, useLocalStorage } from '../hooks/useLocalStorage';
-import type { TradesRow, TradesUpdate } from '@lib/database/TradesApi';
-import { toUSD } from '@lib/utils/MathUtils';
-import {
-  getTradeLongShort,
-  getTradePnl,
-  getTradeRisk,
-} from '@lib/utils/TradeUtils';
 import { Input } from './Input';
 import { InputNumber } from './InputNumber';
-import { TradeDetails } from './TradeDetails';
+import { SpotDetails } from './SpotDetails';
 
-export function TradesTable() {
-  const { trades, insertTrade } = useTradesContext();
-
-  // group trades by month (YYYY-MM)
-  const tradesByMonth = trades?.reduce((acc, trade) => {
-    const d = new Date(trade.created_at);
-    const key = d.toISOString().slice(0, 7); // YYYY-MM
-    const label = d.toLocaleString(undefined, {
-      month: 'long',
-    }); // e.g. "November 2025"
-    if (!acc[key]) acc[key] = { label, trades: [] as TradesRow[] };
-    acc[key].trades.push(trade);
-    return acc;
-  }, {} as Record<string, { label: string; trades: TradesRow[] }>);
-
-  // sort months descending (newest first)
-  const monthKeys = tradesByMonth
-    ? Object.keys(tradesByMonth).sort((a, b) => b.localeCompare(a))
-    : [];
+export function SpotTable() {
+  const { trades, insertTrade } = useSpotContext();
 
   const handleAddTrade = async () => {
     const trade = await insertTrade({
       account: 0,
       amount: 0,
       entry: 0,
-      long_short: 'long',
-      stop: 0,
       symbol: 'BTC',
-      target: 0,
-      time_frame: '15m',
     });
-    setLocalStorageItem(`trade${trade.id}`, {});
+    setLocalStorageItem(`spot${trade.id}`, {});
   };
 
   return (
@@ -63,33 +39,9 @@ export function TradesTable() {
           </tr>
         </thead>
         <tbody>
-          {monthKeys.length > 0
-            ? monthKeys
-                .map((monthKey, index) =>
-                  index != 0 ? (
-                    <tr
-                      key={`month-${monthKey}`}
-                      style={{
-                        background: 'var(--color-bg-highlight)',
-                      }}
-                    >
-                      <th>{tradesByMonth![monthKey].label.toUpperCase()}</th>
-                      <th colSpan={columns.length}></th>
-                    </tr>
-                  ) : null
-                )
-                .flatMap((monthRow, idx) => {
-                  const key = monthKeys[idx];
-                  // render the month header + its trades
-                  return [
-                    monthRow,
-                    ...tradesByMonth![key].trades.map((trade) => (
-                      <Row key={trade.id} trade={trade} />
-                    )),
-                  ];
-                })
-            : // fallback: no trades
-              trades?.map((trade) => <Row key={trade.id} trade={trade} />)}
+          {trades?.map((trade) => (
+            <Row key={trade.id} trade={trade} />
+          ))}
         </tbody>
       </table>
       <datalist id="data-list-symbols">
@@ -99,24 +51,14 @@ export function TradesTable() {
         <option value="ADA"></option>
         <option value="BNB"></option>
       </datalist>
-      <datalist id="data-list-time_frames">
-        <option value="1m"></option>
-        <option value="3m"></option>
-        <option value="5m"></option>
-        <option value="15m"></option>
-        <option value="1h"></option>
-        <option value="4h"></option>
-        <option value="D"></option>
-        <option value="W"></option>
-      </datalist>
     </>
   );
 }
 
-function Row({ trade }: { trade: TradesRow }) {
-  const { updateTrade } = useTradesContext();
+function Row({ trade }: { trade: TradesSpotRow }) {
+  const { updateTrade } = useSpotContext();
   const [tradeLocal, setTradeLocal] =
-    useLocalStorage<Partial<TradesRow> | null>(`trade${trade.id}`, null);
+    useLocalStorage<Partial<TradesSpotRow> | null>(`spot${trade.id}`, null);
   const tradeCombined = { ...trade, ...tradeLocal };
 
   const [d, setShowDetails] = useState(false);
@@ -143,17 +85,13 @@ function Row({ trade }: { trade: TradesRow }) {
     setTradeLocal(null);
   };
 
-  const handleChange = (key: keyof TradesRow, value: unknown) => {
+  const handleChange = (key: keyof TradesSpotRow, value: unknown) => {
     setTradeLocal((prev) => {
       const local = { ...prev, [key]: value };
       const combined = { ...trade, ...local };
-      const long_short = getTradeLongShort({ ...combined });
-      const risk = getTradeRisk({ ...combined, long_short });
-      const pnl = getTradePnl({ ...combined, risk, long_short });
+      const pnl = getSpotPnl({ ...combined });
       return {
         ...local,
-        long_short,
-        risk,
         pnl,
       };
     });
@@ -169,7 +107,7 @@ function Row({ trade }: { trade: TradesRow }) {
         }}
       >
         {columns.map((col) => {
-          const render = col.render ?? ((row: TradesRow) => row[col.key]);
+          const render = col.render ?? ((row: TradesSpotRow) => row[col.key]);
           return (
             <th key={col.key} style={col.style}>
               {render(tradeCombined, editable, (value) =>
@@ -223,7 +161,7 @@ function Row({ trade }: { trade: TradesRow }) {
               background: 'var(--color-bg-highlight)',
             }}
           >
-            <TradeDetails
+            <SpotDetails
               trade={tradeCombined}
               disabled={!editable}
               onChange={handleChange}
@@ -237,10 +175,10 @@ function Row({ trade }: { trade: TradesRow }) {
 
 const columns: {
   label: string;
-  key: keyof TradesRow;
+  key: keyof TradesSpotRow;
   style?: CSSProperties;
   render?: (
-    row: TradesRow,
+    row: TradesSpotRow,
     editable: boolean,
     onChange: (value: unknown) => void
   ) => ReactNode;
@@ -268,32 +206,6 @@ const columns: {
       ),
   },
   {
-    label: 'TF',
-    key: 'time_frame',
-    style: { width: 64 },
-    render: (row, editable, onChange) => {
-      return editable ? (
-        <Input
-          name="time_frame"
-          placeholder={row.time_frame}
-          list="data-list-time_frames"
-          onChange={onChange}
-        />
-      ) : (
-        row.time_frame
-      );
-    },
-  },
-  {
-    label: 'L / S',
-    key: 'long_short',
-    style: { width: 64 },
-    render: (row) => (
-      // long = green, short = red
-      <span className={row.long_short}>{row.long_short}</span>
-    ),
-  },
-  {
     label: 'ACCOUNT',
     key: 'account',
     style: { minWidth: 100, textAlign: 'right' },
@@ -318,18 +230,6 @@ const columns: {
     },
   },
   {
-    label: 'SL',
-    key: 'stop',
-    style: { minWidth: 100, textAlign: 'right' },
-    render(row, editable, onChange) {
-      return editable ? (
-        <InputNumber name="stop" value={row.stop} onChange={onChange} />
-      ) : (
-        toUSD(row.stop)
-      );
-    },
-  },
-  {
     label: 'ENTRY',
     key: 'entry',
     style: { minWidth: 100, textAlign: 'right' },
@@ -338,18 +238,6 @@ const columns: {
         <InputNumber name="entry" value={row.entry} onChange={onChange} />
       ) : (
         toUSD(row.entry)
-      );
-    },
-  },
-  {
-    label: 'TARGET',
-    key: 'target',
-    style: { minWidth: 100, textAlign: 'right' },
-    render(row, editable, onChange) {
-      return editable ? (
-        <InputNumber name="target" value={row.target} onChange={onChange} />
-      ) : (
-        toUSD(row.target)
       );
     },
   },
@@ -384,12 +272,6 @@ const columns: {
         percentage
       );
     },
-  },
-  {
-    label: 'RISK',
-    key: 'risk',
-    style: { width: 64, textAlign: 'right' },
-    render: (row) => (row.risk ? (row.risk * 100).toFixed(2) + '%' : ''),
   },
   {
     label: 'PNL',
