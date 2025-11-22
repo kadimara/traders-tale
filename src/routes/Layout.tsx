@@ -8,7 +8,7 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
   const { session } = useSessionContext();
   return (
     <TradesProvider>
-      <header className="flex gap-1 items-center">
+      <header className="flex gap-1 align-items-center">
         <Book size={24} />
         <Link to="">DASHBOARD</Link>
         <Link to="spot">SPOT</Link>

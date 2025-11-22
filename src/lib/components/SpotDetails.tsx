@@ -23,7 +23,7 @@ export function SpotDetails({
         <>
           <span>{trade.description}</span>
           <div className="flex gap-1">
-            <div className="flex flex-col flex-1 items-center">
+            <div className="flex flex-col flex-1 align-items-center">
               <span>{trade.url}</span>
               <img
                 src={src}

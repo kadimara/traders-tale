@@ -12,3 +12,14 @@ export function toUSD(value: number | null | undefined) {
     }) || ''
   );
 }
+
+export function toEUR(value: number | null | undefined) {
+  return (
+    value?.toLocaleString('nl-NL', {
+      style: 'currency',
+      currency: 'EUR',
+      maximumFractionDigits: 8,
+      minimumFractionDigits: 0,
+    }) || ''
+  );
+}

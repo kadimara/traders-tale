@@ -1,7 +1,7 @@
 import { useSpotContext } from '@lib/context/SpotContext';
 import type { TradesSpotRow } from '@lib/database/SpotApi';
 import type { TradesUpdate } from '@lib/database/TradesApi';
-import { toUSD } from '@lib/utils/MathUtils';
+import { toEUR } from '@lib/utils/MathUtils';
 import { getSpotPnl } from '@lib/utils/TradeUtils';
 import { useState, type CSSProperties, type ReactNode } from 'react';
 import { Circle, Edit, Info, Plus, Save, X } from 'react-feather';
@@ -213,7 +213,7 @@ const columns: {
       return editable ? (
         <InputNumber name="account" value={row.account} onChange={onChange} />
       ) : (
-        toUSD(row.account)
+        toEUR(row.account)
       );
     },
   },
@@ -225,7 +225,7 @@ const columns: {
       return editable ? (
         <InputNumber name="amount" value={row.amount} onChange={onChange} />
       ) : (
-        toUSD(row.amount)
+        toEUR(row.amount)
       );
     },
   },
@@ -237,7 +237,7 @@ const columns: {
       return editable ? (
         <InputNumber name="entry" value={row.entry} onChange={onChange} />
       ) : (
-        toUSD(row.entry)
+        toEUR(row.entry)
       );
     },
   },
@@ -249,7 +249,7 @@ const columns: {
       return editable ? (
         <InputNumber name="exit" value={row.exit} onChange={onChange} />
       ) : (
-        toUSD(row.exit)
+        toEUR(row.exit)
       );
     },
   },
@@ -280,7 +280,7 @@ const columns: {
     render: (row) => (
       // -1 = red, 0 = currentColor, 1 = green
       <span className={row.executed ? 'number' + Math.sign(row.pnl || 0) : ''}>
-        {toUSD(row.pnl)}
+        {toEUR(row.pnl)}
       </span>
     ),
   },

@@ -28,7 +28,7 @@ export function TradeDetails({
           <span>{trade.plan}</span>
           <span>{trade.review}</span>
           <div className="flex gap-1">
-            <div className="flex flex-col flex-1 items-center">
+            <div className="flex flex-col flex-1 align-items-center">
               <span>{trade.url1}</span>
               <img
                 src={src1}
@@ -36,7 +36,7 @@ export function TradeDetails({
                 style={{ maxHeight: 400, objectFit: 'contain' }}
               />
             </div>
-            <div className="flex  flex-col flex-1 items-center">
+            <div className="flex  flex-col flex-1 align-items-center">
               <span>{trade.url2}</span>
               <img
                 src={src2}

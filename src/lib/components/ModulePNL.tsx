@@ -2,6 +2,7 @@ import { ColorType, createChart, HistogramSeries } from 'lightweight-charts';
 import { useEffect, useRef } from 'react';
 import { useTradesContext } from '../context/TradesContext';
 import { toUSD } from '@lib/utils/MathUtils';
+import { Module } from './Module';
 
 const getDaysArray = (startDate: Date, endDate: Date) => {
   const days: string[] = [];
@@ -65,16 +66,8 @@ export function ModulePNL() {
   }, [tradesByDay]);
 
   return (
-    <div
-      className="flex flex-col"
-      style={{
-        alignSelf: 'flex-start',
-        padding: 16,
-        borderRadius: 'var(--border-radius)',
-        background: 'var(--color-bg-highlight)',
-      }}
-    >
-      <h4 style={{ margin: 0 }}>
+    <Module>
+      <h2 style={{ margin: 0 }}>
         Daily P&L
         <strong
           className={'number' + Math.sign(lastDayWithPnl?.value ?? 0)}
@@ -82,10 +75,10 @@ export function ModulePNL() {
         >
           {toUSD(lastDayWithPnl?.value)}
         </strong>
-      </h4>
+      </h2>
       <span style={{ color: 'gray' }}>{lastDayWithPnl?.time}</span>
       <div ref={ref}></div>
-    </div>
+    </Module>
   );
 }
 
