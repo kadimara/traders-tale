@@ -14,7 +14,7 @@ export function ModuleWeek({ trades, ...props }: ModuleWeekProps) {
   const weekStart = getMondayOfISOWeek(week, year);
 
   return (
-    <Module {...props}>
+    <Module className="flex-col" {...props}>
       <div className="flex align-items-center gap-2">
         <h2 style={{ margin: 0 }}>{title}</h2>
         <div className="flex-1"></div>
@@ -105,7 +105,7 @@ const calculateDailyStats = (date: Date, trades: TradesRow[]) => {
     return isSameLocalDay(t, date);
   });
   const totalPnl = dailyTrades.reduce(
-    (acc, trade) => acc + (trade.pnl || 0),
+    (acc, trade) => acc + (trade.executed ? trade.pnl || 0 : 0),
     0
   );
   return { totalTrades: dailyTrades.length, totalPnl };
