@@ -2,14 +2,15 @@ import type { TradesRow } from '@lib/database/TradesApi';
 import React from 'react';
 import { Module, type ModuleProps } from './Module';
 
-type ModuleWinLossRatioProps = { trades: TradesRow[] } & ModuleProps;
+type ModuleWinRateProps = { trades: TradesRow[] } & ModuleProps;
 
-export const ModuleWinLossRatio: React.FC<ModuleWinLossRatioProps> = ({
+export const ModuleWinRate: React.FC<ModuleWinRateProps> = ({
   trades,
   ...props
 }) => {
-  const wins = trades.filter((trade) => (trade.pnl ?? 0) > 0).length;
-  const total = trades.length;
+  const executedTrades = trades.filter((trade) => trade.executed);
+  const wins = executedTrades.filter((trade) => (trade.pnl ?? 0) > 0).length;
+  const total = executedTrades.length;
   const winPercentage = (wins / total) * 100 || 0;
 
   return (

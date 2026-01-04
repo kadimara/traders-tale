@@ -25,11 +25,11 @@ export const ModuleAverage: React.FC<ModuleAvarageProps> = ({
   const avgWin = getAverage(winTrades);
   const avgLoss = getAverage(lossTrades);
 
-  const winX = (avgWin / (avgWin + avgLoss)) * 100;
+  const winX = (avgWin / (avgWin + avgLoss)) * 100 || 0;
 
   return (
     <Module className="flex-col align-items-center" {...props}>
-      <p>Average</p>
+      <h3>Average</h3>
       <svg
         viewBox="-4 -4 108 24"
         style={{ overflow: 'visible', width: '100%', maxWidth: '200px' }}
@@ -46,14 +46,18 @@ export const ModuleAverage: React.FC<ModuleAvarageProps> = ({
         <line
           x1="0"
           y1="2"
-          x2={winX}
+          x2="100"
           y2="2"
           stroke="#089981"
           strokeWidth="4"
           strokeLinecap="round"
+          strokeDasharray={`${winX} 157`}
+          style={{
+            transition: 'stroke-dasharray 0.6s ease-in-out',
+          }}
         />
         <text fill="#089981" x="0" y="16" textAnchor="start" fontSize="8">
-          Win {avgWin.toFixed(1)}%
+          Profit {avgWin.toFixed(1)}%
         </text>
         <text fill="#f23645" x="100" y="16" textAnchor="end" fontSize="8">
           Loss {avgLoss.toFixed(1)}%

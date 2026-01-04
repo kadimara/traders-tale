@@ -187,7 +187,19 @@ const columns: {
     label: 'DATE',
     key: 'created_at',
     style: { width: 200 },
-    render: ({ created_at }) => new Date(created_at).toLocaleString(),
+    render: ({ created_at }, editable, onChange) => {
+      const date = new Date(created_at);
+      if (editable) {
+        return (
+          <input
+            type="date"
+            value={date.toISOString().split('T')[0]}
+            onChange={(e) => onChange(new Date(e.target.value).toISOString())}
+          />
+        );
+      }
+      return date.toLocaleDateString();
+    },
   },
   {
     label: 'SYMBOL',
@@ -205,18 +217,7 @@ const columns: {
         row.symbol
       ),
   },
-  {
-    label: 'ACCOUNT',
-    key: 'account',
-    style: { minWidth: 100, textAlign: 'right' },
-    render(row, editable, onChange) {
-      return editable ? (
-        <InputNumber name="account" value={row.account} onChange={onChange} />
-      ) : (
-        toEUR(row.account)
-      );
-    },
-  },
+
   {
     label: 'AMOUNT',
     key: 'amount',
@@ -225,7 +226,7 @@ const columns: {
       return editable ? (
         <InputNumber name="amount" value={row.amount} onChange={onChange} />
       ) : (
-        toEUR(row.amount)
+        `${row.amount} ${row.symbol}`
       );
     },
   },
@@ -254,29 +255,8 @@ const columns: {
     },
   },
   {
-    label: 'FEES',
-    key: 'fees',
-    style: { width: 100, textAlign: 'right' },
-    render: (row, editable, onChange) => {
-      const percentage = row.fees ? (row.fees * 100).toFixed(2) + '%' : '';
-      return editable ? (
-        <InputNumber
-          name="fees"
-          min="0"
-          max="0.1"
-          step="0.01"
-          value={(row.fees || 0) * 100}
-          onChange={(value) => onChange(value / 100)}
-        />
-      ) : (
-        percentage
-      );
-    },
-  },
-  {
     label: 'PNL',
     key: 'pnl',
-    style: { width: 64, textAlign: 'right' },
     render: (row) => (
       // -1 = red, 0 = currentColor, 1 = green
       <span className={row.executed ? 'number' + Math.sign(row.pnl || 0) : ''}>

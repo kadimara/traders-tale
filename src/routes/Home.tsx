@@ -1,7 +1,7 @@
 import { Module } from '@lib/components/Module';
 import ModuleAverage from '@lib/components/ModuleAverage';
 import { ModuleWeek } from '@lib/components/ModuleWeek';
-import { ModuleWinLossRatio } from '@lib/components/ModuleWinLossRatio';
+import { ModuleWinRate } from '@lib/components/ModuleWinRate';
 import { useTradesContext } from '@lib/context/TradesContext';
 
 export default function Home() {
@@ -18,7 +18,7 @@ export default function Home() {
       }}
     >
       <Module style={{ gridColumn: 'span 3' }}></Module>
-      <ModuleWinLossRatio trades={trades} style={{ gridColumn: 'span 3' }} />
+      <ModuleWinRate trades={trades} style={{ gridColumn: 'span 3' }} />
       <ModuleAverage trades={trades} style={{ gridColumn: 'span 3' }} />
       <Module style={{ gridColumn: 'span 3' }}></Module>
       <ModuleWeek trades={trades} style={{ gridColumn: 'span 12' }} />

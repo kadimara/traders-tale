@@ -86,7 +86,7 @@ export function getSpotPnl({ amount, entry, exit }: TradesSpotRow): number {
   if (!exit || !entry) {
     return 0;
   }
-  return round(amount - (exit / entry) * amount, 2) * -1;
+  return round(amount * exit - amount * entry, 2);
 }
 
 // export function getRiskRewardRatio(entry: number, takeProfit: number, stopLoss: number): string {
