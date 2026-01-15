@@ -29,7 +29,9 @@ export function TradeDetails({
           <span>{trade.review}</span>
           <div className="flex gap-1">
             <div className="flex flex-col flex-1 align-items-center">
-              <span>{trade.url1}</span>
+              <a href={trade.url1 ?? undefined} target="_blank">
+                {trade.url1}
+              </a>
               <img
                 src={src1}
                 alt="Tradingview chart image"
@@ -37,7 +39,9 @@ export function TradeDetails({
               />
             </div>
             <div className="flex  flex-col flex-1 align-items-center">
-              <span>{trade.url2}</span>
+              <a href={trade.url2 ?? undefined} target="_blank">
+                {trade.url2}
+              </a>
               <img
                 src={src2}
                 alt="Tradingview chart image"
