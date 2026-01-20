@@ -1,6 +1,8 @@
 :root {
   --color-long: light-dark(#089981, #089981);
   --color-short: light-dark(#f23645, #f23645);
+  --color-long-background: rgba(34, 197, 94, 0.1);
+  --color-short-background: rgba(239, 68, 68, 0.1);
 }
 
 .long,
@@ -8,7 +10,17 @@
   color: var(--color-long);
 }
 
+.background-long,
+.background-number1 {
+  background-color: var(--color-long-background);
+}
+
 .short,
 .number-1 {
   color: var(--color-short);
+}
+
+.background-short,
+.background-number-1 {
+  background-color: var(--color-short-background);
 }
