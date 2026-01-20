@@ -15,7 +15,6 @@ export function SpotTable() {
 
   const handleAddTrade = async () => {
     const trade = await insertTrade({
-      account: 0,
       amount: 0,
       entry: 0,
       symbol: 'BTC',
