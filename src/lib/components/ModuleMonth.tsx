@@ -38,6 +38,7 @@ export function ModuleMonth({ trades, monthDate, ...props }: ModuleMonthProps) {
           display: 'grid',
           gridTemplateColumns: 'repeat(7, 1fr)',
           gap: '4px',
+          minHeight: 560,
         }}
       >
         {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map((day) => (
@@ -56,29 +57,42 @@ export function ModuleMonth({ trades, monthDate, ...props }: ModuleMonthProps) {
           const dayNum = d.getDate();
           const isToday = isSameLocalDay(d, today);
           const { totalTrades, totalPnl } = calculateDailyStats(d, trades);
+          if (!isCurrentMonth) {
+            return <div></div>;
+          }
           return (
             <div
               key={i}
               className={`flex flex-col align-items-center rounded background-number${Math.sign(
-                totalPnl
+                totalPnl,
               )}`}
               style={{
                 padding: '24px 16px',
-                opacity: isCurrentMonth ? 1 : 0.4,
                 position: 'relative',
                 fontWeight: isToday ? 600 : 'inherit',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
             >
               <span style={{ position: 'absolute', top: 4, right: 6 }}>
                 {dayNum}
               </span>
-              <span
-                className={`number${Math.sign(totalPnl)}`}
-                style={{ fontWeight: 600, fontSize: 16 }}
-              >
-                {toUSD(totalPnl)}
-              </span>
-              <span>{totalTrades} trades</span>
+
+              {totalTrades === 0 ? (
+                <span>No trades</span>
+              ) : (
+                <>
+                  <span
+                    className={`number${Math.sign(totalPnl)}`}
+                    style={{ fontWeight: 600, fontSize: 16 }}
+                  >
+                    {toUSD(totalPnl)}
+                  </span>
+                  <span>
+                    {totalTrades} {totalTrades == 1 ? 'trade' : 'trades'}
+                  </span>
+                </>
+              )}
             </div>
           );
         })}
@@ -100,7 +114,7 @@ const calculateDailyStats = (date: Date, trades: TradesRow[]) => {
   });
   const totalPnl = dailyTrades.reduce(
     (acc, trade) => acc + (trade.executed ? trade.pnl || 0 : 0),
-    0
+    0,
   );
   return { totalTrades: dailyTrades.length, totalPnl };
 };

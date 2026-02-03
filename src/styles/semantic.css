@@ -306,6 +306,10 @@ ol {
 }
 
 ul {
+  list-style: disc inside;
+}
+
+ul ul {
   list-style: circle inside;
 }
 
