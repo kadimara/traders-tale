@@ -1,9 +1,10 @@
 import { createContext, useContext, type PropsWithChildren } from 'react';
 import { useAsync } from '../hooks/useAsync';
+import { useMonthContext } from './MonthContext';
 import {
   tradesDelete,
   tradesInsert,
-  tradesSelectAll,
+  tradesSelectByMonth,
   tradesUpdate,
   type TradesInsert,
   type TradesRow,
@@ -22,7 +23,10 @@ type TradesContextType = {
 const TradesContext = createContext<TradesContextType | undefined>(undefined);
 
 export function TradesProvider({ children }: PropsWithChildren) {
-  const { data, error, loading, setData } = useAsync(tradesSelectAll);
+  const { monthKey } = useMonthContext();
+  const { data, error, loading, setData } = useAsync(
+    () => tradesSelectByMonth(monthKey)
+  );
 
   async function insertTrade(trade: TradesInsert) {
     const insertedTrade = await tradesInsert(trade);

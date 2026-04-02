@@ -15,6 +15,22 @@ export async function tradesSelectAll() {
   return data;
 }
 
+export async function tradesSelectByMonth(monthKey: string) {
+  const startDate = new Date(monthKey);
+  const endDate = new Date(startDate);
+  endDate.setMonth(endDate.getMonth() + 1);
+
+  const { data, error } = await supabase
+    .from('trades')
+    .select('*')
+    .gte('created_at', startDate.toISOString())
+    .lt('created_at', endDate.toISOString())
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data;
+}
+
 export async function tradesInsert(trade: TradesInsert) {
   const { data, error } = await supabase
     .from('trades')
