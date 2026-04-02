@@ -34,7 +34,7 @@ export function useAsync<T>(asyncFn: () => Promise<T>) {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [asyncFn]);
 
   return {
     data,
