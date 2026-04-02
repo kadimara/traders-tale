@@ -2,23 +2,41 @@
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
-  build:
+  lint:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
 
-    - run: npm ci
+      - run: npm ci
 
-    - run: npm run build
+      - run: npm run lint
 
-    - run: npm run lint
+  build:
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Clean install
+        run: |
+          npm cache clean --force
+          npm ci
+
+      - run: npm run build
