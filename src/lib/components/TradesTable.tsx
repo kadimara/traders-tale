@@ -15,24 +15,6 @@ import { TradeDetails } from './TradeDetails';
 
 export function TradesTable() {
   const { trades, insertTrade } = useTradesContext();
-
-  // group trades by month (YYYY-MM)
-  const tradesByMonth = trades?.reduce((acc, trade) => {
-    const d = new Date(trade.created_at);
-    const key = d.toISOString().slice(0, 7); // YYYY-MM
-    const label = d.toLocaleString(undefined, {
-      month: 'long',
-    }); // e.g. "November 2025"
-    if (!acc[key]) acc[key] = { label, trades: [] as TradesRow[] };
-    acc[key].trades.push(trade);
-    return acc;
-  }, {} as Record<string, { label: string; trades: TradesRow[] }>);
-
-  // sort months descending (newest first)
-  const monthKeys = tradesByMonth
-    ? Object.keys(tradesByMonth).sort((a, b) => b.localeCompare(a))
-    : [];
-
   const handleAddTrade = async () => {
     const trade = await insertTrade({
       account: 0,
@@ -42,7 +24,7 @@ export function TradesTable() {
       stop: 0,
       symbol: 'BTC',
       target: 0,
-      time_frame: '15m',
+      time_frame: '4h',
     });
     setLocalStorageItem(`trade${trade.id}`, {});
   };
@@ -63,33 +45,9 @@ export function TradesTable() {
           </tr>
         </thead>
         <tbody>
-          {monthKeys.length > 0
-            ? monthKeys
-                .map((monthKey, index) =>
-                  index != 0 ? (
-                    <tr
-                      key={`month-${monthKey}`}
-                      style={{
-                        background: 'var(--color-bg-highlight)',
-                      }}
-                    >
-                      <th>{tradesByMonth![monthKey].label.toUpperCase()}</th>
-                      <th colSpan={columns.length}></th>
-                    </tr>
-                  ) : null
-                )
-                .flatMap((monthRow, idx) => {
-                  const key = monthKeys[idx];
-                  // render the month header + its trades
-                  return [
-                    monthRow,
-                    ...tradesByMonth![key].trades.map((trade) => (
-                      <Row key={trade.id} trade={trade} />
-                    )),
-                  ];
-                })
-            : // fallback: no trades
-              trades?.map((trade) => <Row key={trade.id} trade={trade} />)}
+          {trades?.map((trade) => (
+            <Row key={trade.id} trade={trade} />
+          ))}
         </tbody>
       </table>
       <datalist id="data-list-symbols">
@@ -173,7 +131,7 @@ function Row({ trade }: { trade: TradesRow }) {
           return (
             <th key={col.key} style={col.style}>
               {render(tradeCombined, editable, (value) =>
-                handleChange(col.key, value)
+                handleChange(col.key, value),
               )}
             </th>
           );
@@ -242,7 +200,7 @@ const columns: {
   render?: (
     row: TradesRow,
     editable: boolean,
-    onChange: (value: unknown) => void
+    onChange: (value: unknown) => void,
   ) => ReactNode;
 }[] = [
   {

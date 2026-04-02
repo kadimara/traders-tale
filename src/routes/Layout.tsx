@@ -1,13 +1,13 @@
+import { supabase } from '@lib/database/SupabaseClient';
 import { Book, LogOut } from 'react-feather';
+import MonthHeader from '../lib/components/MonthHeader';
 import { Link } from '../lib/components/Router';
 import { useSessionContext } from '../lib/context/SessionContext';
-import { TradesProvider } from '../lib/context/TradesContext';
-import { supabase } from '@lib/database/SupabaseClient';
 
 export default function Layout({ children }: { children?: React.ReactNode }) {
   const { session } = useSessionContext();
   return (
-    <TradesProvider>
+    <>
       <header className="flex gap-1 align-items-center">
         <Book size={24} />
         <Link to="">DASHBOARD</Link>
@@ -26,8 +26,9 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
           <LogOut />
         </button>
       </header>
+      <MonthHeader />
       {children}
       <footer></footer>
-    </TradesProvider>
+    </>
   );
 }

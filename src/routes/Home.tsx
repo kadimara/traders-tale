@@ -5,36 +5,21 @@ import { ModuleProfitFactor } from '@lib/components/ModuleProfitFactor';
 import { ModulePlan } from '@lib/components/ModulePlan';
 import { useTradesContext } from '@lib/context/TradesContext';
 import { useSessionContext } from '@lib/context/SessionContext';
+import { useMonthContext } from '@lib/context/MonthContext';
 import {
   monthlyPlanSelectByMonth,
   monthlyPlanUpsert,
 } from '@lib/database/MonthlyPlanApi';
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'react-feather';
 
 export default function Home() {
   const { trades } = useTradesContext();
   const { session } = useSessionContext();
+  const { monthDate, monthKey } = useMonthContext();
   const today = new Date();
-  const [monthDate, setMonthDate] = useState<Date>(() => {
-    const d = new Date(today);
-    d.setDate(1);
-    return d;
-  });
 
   // Plan state
   const [planContent, setPlanContent] = useState<string>('');
-
-  const monthYear = monthDate
-    .toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'long',
-    })
-    .replace(/^./, (c) => c.toUpperCase());
-
-  const monthKey = `${monthDate.getFullYear()}-${String(
-    monthDate.getMonth() + 1
-  ).padStart(2, '0')}-01`;
 
   // Fetch plan when month changes
   useEffect(() => {
@@ -76,35 +61,8 @@ export default function Home() {
     });
   };
 
-  const handlePrevMonth = () => {
-    setMonthDate((prev) => {
-      const d = new Date(prev);
-      d.setMonth(d.getMonth() - 1);
-      return d;
-    });
-  };
-
-  const handleNextMonth = () => {
-    setMonthDate((prev) => {
-      const d = new Date(prev);
-      d.setMonth(d.getMonth() + 1);
-      return d;
-    });
-  };
-
-  const handleToday = () => {
-    const d = new Date(today);
-    d.setDate(1);
-    setMonthDate(d);
-  };
-
-  const filteredTrades = trades.filter((trade) => {
-    const tradeDate = new Date(trade.created_at);
-    return (
-      tradeDate.getFullYear() === monthDate.getFullYear() &&
-      tradeDate.getMonth() === monthDate.getMonth()
-    );
-  });
+  // Since trades now are filtered by month via TradesContext, no filtering needed
+  const filteredTrades = trades;
 
   // Check if the selected month is previous month (disabled only for past months)
   const isPreviousMonth =
@@ -127,17 +85,6 @@ export default function Home() {
         margin: 'auto',
       }}
     >
-      <div className="flex align-items-center gap-2">
-        <h1 style={{ margin: 0 }}>{monthYear}</h1>
-        <div className="flex-1"></div>
-        <button onClick={handlePrevMonth}>
-          <ChevronLeft />
-        </button>
-        <button onClick={handleToday}>Today</button>
-        <button onClick={handleNextMonth}>
-          <ChevronRight />
-        </button>
-      </div>
       <div
         style={{
           display: 'grid',
