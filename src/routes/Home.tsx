@@ -39,8 +39,8 @@ export default function Home() {
   // Fetch plan when month changes
   useEffect(() => {
     const fetchPlan = async () => {
+      setPlanContent('# Loading...');
       if (!session?.user?.id) {
-        setPlanContent('');
         return;
       }
 
