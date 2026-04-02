@@ -82,6 +82,7 @@ export function getTradePnl({
   return (long_short == 'long' ? pnl * -1 : pnl) - feesPayed;
 }
 
+// test
 export function getSpotPnl({ amount, entry, exit }: TradesSpotRow): number {
   if (!exit || !entry) {
     return 0;
@@ -106,7 +107,7 @@ export function getImageSrcFromTradingViewUrl(url: string) {
     return '';
   }
   const results = url.match(
-    /(?<=https:\/\/www.tradingview.com\/x\/)(.*)(?=\/)/g
+    /(?<=https:\/\/www.tradingview.com\/x\/)(.*)(?=\/)/g,
   );
   const result = results?.[0];
   const char = result?.[0]?.toLowerCase();
