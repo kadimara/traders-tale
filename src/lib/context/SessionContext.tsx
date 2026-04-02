@@ -25,7 +25,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
-      session ?? navigate('auth');
+      if (!session) navigate('auth');
     });
 
     // Listen for changes
@@ -33,7 +33,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      session ?? navigate('auth');
+      if (!session) navigate('auth');
     });
 
     return () => subscription.unsubscribe();

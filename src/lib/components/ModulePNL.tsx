@@ -6,11 +6,11 @@ import { Module } from './Module';
 
 const getDaysArray = (startDate: Date, endDate: Date) => {
   const days: string[] = [];
-  let currentDate = startDate;
+  let current = new Date(startDate);
 
-  while (currentDate <= endDate) {
-    days.push(currentDate.toISOString().split('T')[0]);
-    currentDate.setDate(currentDate.getDate() + 1);
+  while (current <= endDate) {
+    days.push(current.toISOString().split('T')[0]);
+    current = new Date(current.getTime() + 24 * 60 * 60 * 1000);
   }
 
   return days;

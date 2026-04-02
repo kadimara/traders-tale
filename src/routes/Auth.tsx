@@ -10,7 +10,7 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    session && navigate('');
+    if (session) navigate('');
   }, [session]);
 
   // async function handleSignUp() {
