@@ -15,7 +15,7 @@ jobs:
           PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         run: |
           pg_dump \
-            "postgresql://postgres@db.rhrbxtmqrpbnoyylgsyl.supabase.co:5432/postgres" \
+            "postgresql://postgres.rhrbxtmqrpbnoyylgsyl@aws-0-eu-west-3.pooler.supabase.com:5432/postgres" \
             --schema-only \
             --no-password \
             -f schema.sql
@@ -25,7 +25,7 @@ jobs:
           PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         run: |
           pg_dump \
-            "postgresql://postgres@db.rhrbxtmqrpbnoyylgsyl.supabase.co:5432/postgres" \
+            "postgresql://postgres.rhrbxtmqrpbnoyylgsyl@aws-0-eu-west-3.pooler.supabase.com:5432/postgres" \
             --data-only \
             --use-insert \
             --no-password \
