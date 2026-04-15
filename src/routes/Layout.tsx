@@ -15,9 +15,7 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
         <Link to="futures">FUTURES</Link>
         {/* <a>PROFILE</a> */}
         <span className="flex-1" />
-        Welcome,{' '}
-        {session?.user.user_metadata['display_name'] || session?.user.email}
-        <span className="flex-1" />
+        <span>{session?.user.user_metadata['display_name'] || session?.user.email}</span>
         <button
           onClick={() => supabase.auth.signOut()}
           title="logout"

@@ -1,7 +1,7 @@
-import { useState, type CSSProperties } from 'react';
+import { useState } from 'react';
 import { Module, type ModuleProps } from './Module';
 import { Edit, Save } from 'react-feather';
-import ReactMarkdown from 'react-markdown';
+import { MarkdownField } from './MarkdownField';
 
 type ModulePlanProps = {
   value: string;
@@ -31,43 +31,17 @@ export function ModulePlan({
     setIsEditing(!isEditing);
   };
 
-  const textStyle: CSSProperties = {
-    flex: 1,
-    width: '100%',
-    minHeight: '300px',
-    fontFamily: 'inherit',
-    padding: 4,
-    resize: 'none',
-    overflow: 'auto',
-    lineHeight: 1.6,
-    whiteSpace: 'pre-wrap',
-    wordWrap: 'break-word',
-  };
   return (
     <Module
       className="flex-col gap-1"
       style={{ position: 'relative', justifyContent: 'flex-start', ...style }}
       {...props}
     >
-      {isEditing ? (
-        <textarea
-          disabled={disabled}
-          value={editText}
-          onChange={(e) => setEditText(e.target.value)}
-          style={textStyle}
-        />
-      ) : (
-        <ReactMarkdown
-          components={{
-            h1: 'h2',
-            h2: 'h3',
-            h3: 'h4',
-            h4: 'h5',
-          }}
-        >
-          {value}
-        </ReactMarkdown>
-      )}
+      <MarkdownField
+        value={isEditing ? editText : value}
+        editing={isEditing}
+        onChange={setEditText}
+      />
       <button
         disabled={disabled}
         style={{ position: 'absolute', top: 8, right: 8 }}
