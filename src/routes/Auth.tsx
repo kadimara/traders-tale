@@ -1,17 +1,18 @@
 import { useEffect, useState } from 'react';
-import { navigate } from '../lib/components/Router';
+import { useNavigate } from '@tanstack/react-router';
 import { useSessionContext } from '../lib/context/SessionContext';
 import { supabase } from '@lib/database/SupabaseClient';
 
 export default function Auth() {
   const { session } = useSessionContext();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (session) navigate('');
-  }, [session]);
+    if (session) navigate({ to: '/' });
+  }, [session, navigate]);
 
   // async function handleSignUp() {
   //   setLoading(true);
@@ -35,10 +36,24 @@ export default function Auth() {
   }
 
   return (
-    <dialog
-      className="flex flex-col gap-1"
-      style={{ alignSelf: 'anchor-center' }}
+    <main
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+      }}
     >
+    <div
+        className="flex flex-col gap-1"
+        style={{
+          background: 'var(--color-bg)',
+          border: '1px solid var(--color-border)',
+          borderRadius: 'var(--border-radius)',
+          padding: 24,
+          minWidth: 280,
+        }}
+      >
       <input
         className="border p-2"
         type="email"
@@ -57,6 +72,7 @@ export default function Auth() {
       {/* <button onClick={handleSignUp} disabled={loading}>
         Sign Up
       </button> */}
-    </dialog>
+    </div>
+    </main>
   );
 }

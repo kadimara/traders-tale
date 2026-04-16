@@ -1,7 +1,7 @@
 import { supabase } from '@lib/database/SupabaseClient';
 import { Book, LogOut } from 'react-feather';
 import MonthHeader from '../lib/components/MonthHeader';
-import { Link } from '../lib/components/Router';
+import { Link } from '@tanstack/react-router';
 import { useSessionContext } from '../lib/context/SessionContext';
 
 export default function Layout({ children }: { children?: React.ReactNode }) {
@@ -10,9 +10,9 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
     <>
       <header className="flex gap-1 align-items-center">
         <Book size={24} />
-        <Link to="">DASHBOARD</Link>
-        <Link to="spot">SPOT</Link>
-        <Link to="futures">FUTURES</Link>
+        <Link to="/">DASHBOARD</Link>
+        <Link to="/spot">SPOT</Link>
+        <Link to="/futures">FUTURES</Link>
         {/* <a>PROFILE</a> */}
         <span className="flex-1" />
         Welcome,{' '}
