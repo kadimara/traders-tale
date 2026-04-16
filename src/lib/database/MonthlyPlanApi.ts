@@ -8,11 +8,12 @@ export type MonthlyPlanInsert =
 export type MonthlyPlanUpdate =
   Database['public']['Tables']['monthly_plan']['Update'];
 
-export async function monthlyPlanSelectByMonth(monthYear: string) {
+export async function monthlyPlanSelectByMonth(monthYear: string, userId: string) {
   const { data, error } = await supabase
     .from('monthly_plan')
     .select('*')
     .eq('month_year', monthYear)
+    .eq('user_id', userId)
     .single();
 
   if (error && error.code !== 'PGRST116') throw error;
