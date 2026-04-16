@@ -6,12 +6,14 @@ import ReactMarkdown from 'react-markdown';
 type ModulePlanProps = {
   value: string;
   disabled?: boolean;
+  placeholder?: string;
   onChange: (content: string) => void;
 } & Omit<ModuleProps, 'onChange'>;
 
 export function ModulePlan({
   value,
   disabled,
+  placeholder,
   style,
   onChange,
   ...props
@@ -53,10 +55,11 @@ export function ModulePlan({
         <textarea
           disabled={disabled}
           value={editText}
+          placeholder={placeholder}
           onChange={(e) => setEditText(e.target.value)}
           style={textStyle}
         />
-      ) : (
+      ) : value ? (
         <ReactMarkdown
           components={{
             h1: 'h2',
@@ -67,6 +70,8 @@ export function ModulePlan({
         >
           {value}
         </ReactMarkdown>
+      ) : (
+        <span style={{ color: 'var(--color-text-highlight)' }}>{placeholder}</span>
       )}
       <button
         disabled={disabled}

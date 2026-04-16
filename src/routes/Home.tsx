@@ -16,105 +16,51 @@ export default function Home() {
   const { trades } = useTradesContext();
   const { session } = useSessionContext();
   const { monthDate, monthKey } = useMonthContext();
-  const today = new Date();
 
-  // Plan state
-  const [planContent, setPlanContent] = useState<string>('');
+  const [planContent, setPlanContent] = useState('');
 
-  // Fetch plan when month changes
   useEffect(() => {
-    const fetchPlan = async () => {
-      setPlanContent('# Loading...');
-      if (!session?.user?.id) {
-        return;
-      }
-
-      try {
-        const existingPlan = await monthlyPlanSelectByMonth(monthKey, session.user.id);
-        setPlanContent(existingPlan?.content || '');
-      } catch (error) {
-        console.error('Failed to fetch plan:', error);
-        setPlanContent('');
-      }
-    };
-
-    fetchPlan();
+    if (!session?.user?.id) return;
+    setPlanContent('');
+    monthlyPlanSelectByMonth(monthKey, session.user.id)
+      .then((plan) => setPlanContent(plan?.content ?? ''))
+      .catch((err) => console.error('Failed to fetch plan:', err));
   }, [monthKey, session?.user?.id]);
 
-  // Handle plan save
   const handlePlanChange = (content: string) => {
+    if (!session?.user?.id) return;
     setPlanContent(content);
-
-    if (!session?.user?.id) {
-      console.error('User not authenticated');
-      return;
-    }
-
-    // Save in background
-    monthlyPlanUpsert({
-      user_id: session.user.id,
-      month_year: monthKey,
-      content,
-    }).catch((error) => {
-      console.error('Failed to save plan:', error);
-      // Optionally show error toast here
-    });
+    monthlyPlanUpsert({ user_id: session.user.id, month_year: monthKey, content }).catch(
+      (err) => console.error('Failed to save plan:', err)
+    );
   };
 
-  // Since trades now are filtered by month via TradesContext, no filtering needed
-  const filteredTrades = trades;
-
-  // Check if the selected month is previous month (disabled only for past months)
+  const today = new Date();
   const isPreviousMonth =
     monthDate.getFullYear() < today.getFullYear() ||
     (monthDate.getFullYear() === today.getFullYear() &&
       monthDate.getMonth() < today.getMonth());
 
-  // Display placeholder when no content
-  const displayPlanContent =
-    planContent ||
-    `# Trading Plan - ${monthDate.toLocaleDateString(undefined, {
-      month: 'long',
-    })} ${monthDate.getFullYear()}`;
+  const monthLabel = monthDate.toLocaleDateString(undefined, {
+    month: 'long',
+    year: 'numeric',
+  });
 
   return (
-    <main
-      className="flex flex-col gap-4"
-      style={{
-        width: '90%',
-        margin: 'auto',
-      }}
-    >
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(12, 1fr)',
-          gap: 32,
-        }}
-      >
-        <ModuleProfitFactor
-          trades={filteredTrades}
-          style={{ gridColumn: 'span 4' }}
-        />
-        <ModuleWinRate
-          trades={filteredTrades}
-          style={{ gridColumn: 'span 4' }}
-        />
-        <ModuleAverage
-          trades={filteredTrades}
-          style={{ gridColumn: 'span 4' }}
-        />
-        <ModuleMonth
-          trades={filteredTrades}
-          monthDate={monthDate}
-          style={{ gridColumn: 'span 6', gridRow: 'span 6' }}
-        />
+    <main style={{ maxWidth: 1400, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: 16 }}>
+        <ModuleProfitFactor trades={trades} />
+        <ModuleWinRate trades={trades} />
+        <ModuleAverage trades={trades} />
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 560px), 1fr))', gap: 16 }}>
+        <ModuleMonth trades={trades} monthDate={monthDate} />
         <ModulePlan
           key={monthKey}
-          value={displayPlanContent}
+          value={planContent}
           onChange={handlePlanChange}
           disabled={isPreviousMonth}
-          style={{ gridColumn: 'span 6', gridRow: 'span 6' }}
+          placeholder={`# Trading Plan — ${monthLabel}\n\nWrite your plan here...`}
         />
       </div>
     </main>
