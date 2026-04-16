@@ -30,7 +30,7 @@ export default function Home() {
       }
 
       try {
-        const existingPlan = await monthlyPlanSelectByMonth(monthKey);
+        const existingPlan = await monthlyPlanSelectByMonth(monthKey, session.user.id);
         setPlanContent(existingPlan?.content || '');
       } catch (error) {
         console.error('Failed to fetch plan:', error);
