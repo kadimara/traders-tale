@@ -37,8 +37,7 @@ export function ModuleMonth({ trades, monthDate, ...props }: ModuleMonthProps) {
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(7, 1fr)',
-          gap: '4px',
-          minHeight: 560,
+          gap: 4,
         }}
       >
         {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map((day) => (
@@ -47,6 +46,7 @@ export function ModuleMonth({ trades, monthDate, ...props }: ModuleMonthProps) {
             style={{
               fontWeight: 600,
               textAlign: 'center',
+              overflow: 'hidden',
             }}
           >
             {day}
@@ -58,29 +58,26 @@ export function ModuleMonth({ trades, monthDate, ...props }: ModuleMonthProps) {
           const isToday = isSameLocalDay(d, today);
           const { totalTrades, totalPnl } = calculateDailyStats(d, trades);
           if (!isCurrentMonth) {
-            return <div></div>;
+            return <div key={i} />;
           }
           return (
             <div
               key={i}
-              className={`flex flex-col align-items-center rounded background-number${Math.sign(
-                totalPnl,
-              )}`}
+              className={`flex flex-col rounded background-number${Math.sign(totalPnl)}`}
               style={{
-                padding: '24px 16px',
+                aspectRatio: '1',
+                padding: 'clamp(2px, 0.8vw, 12px)',
                 position: 'relative',
                 fontWeight: isToday ? 600 : 'inherit',
                 alignItems: 'center',
                 justifyContent: 'center',
+                overflow: 'hidden',
               }}
             >
-              <span style={{ position: 'absolute', top: 4, right: 6 }}>
+              <span style={{ position: 'absolute', top: 2, right: 4 }}>
                 {dayNum}
               </span>
-
-              {totalTrades === 0 ? (
-                <span>No trades</span>
-              ) : (
+              {totalTrades > 0 && (
                 <>
                   <span
                     className={`number${Math.sign(totalPnl)}`}
@@ -89,7 +86,7 @@ export function ModuleMonth({ trades, monthDate, ...props }: ModuleMonthProps) {
                     {toUSD(totalPnl)}
                   </span>
                   <span>
-                    {totalTrades} {totalTrades == 1 ? 'trade' : 'trades'}
+                    {totalTrades} {totalTrades === 1 ? 'trade' : 'trades'}
                   </span>
                 </>
               )}

@@ -6,12 +6,14 @@ import { MarkdownField } from './MarkdownField';
 type ModulePlanProps = {
   value: string;
   disabled?: boolean;
+  placeholder?: string;
   onChange: (content: string) => void;
 } & Omit<ModuleProps, 'onChange'>;
 
 export function ModulePlan({
   value,
   disabled,
+  placeholder,
   style,
   onChange,
   ...props
