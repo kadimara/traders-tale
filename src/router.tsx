@@ -11,6 +11,7 @@ import Auth from './routes/Auth';
 import Home from './routes/Home';
 import Spot from './routes/Spot';
 import Futures from './routes/Futures';
+import Trade from './routes/Trade';
 
 const rootRoute = createRootRoute({
   component: () => <Outlet />,
@@ -55,9 +56,16 @@ const futuresRoute = createRoute({
   component: Futures,
 });
 
+const tradeRoute = createRoute({
+  getParentRoute: () => layoutRoute,
+  path: '/trade/$id',
+  component: Trade,
+});
+
 const routeTree = rootRoute.addChildren([
   authRoute,
-  layoutRoute.addChildren([homeRoute, spotRoute, futuresRoute]),
+  tradeRoute,
+  layoutRoute.addChildren([homeRoute, spotRoute, futuresRoute, tradeRoute]),
 ]);
 
 export const router = createRouter({

@@ -55,6 +55,17 @@ export async function tradesUpdate(id: number, trade: TradesUpdate) {
   return data;
 }
 
+export async function tradesSelectById(id: number) {
+  const { data, error } = await supabase
+    .from('trades')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
 export async function tradesDelete(id: number) {
   const { error } = await supabase.from('trades').delete().eq('id', id);
   if (error) throw error;

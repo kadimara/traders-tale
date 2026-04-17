@@ -455,3 +455,22 @@ button svg {
 input {
   width: 100%;
 }
+
+[role='button'] {
+  background-color: var(--color-main);
+  border: 0.1rem solid var(--color-main);
+  border-radius: var(--border-radius);
+  color: var(--color-main-text);
+  font-weight: 700;
+  padding: 2px 6px;
+  cursor: pointer;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[role='button']:hover {
+  background-color: var(--color-main-highlight);
+  border-color: var(--color-main-highlight);
+}

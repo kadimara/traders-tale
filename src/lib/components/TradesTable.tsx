@@ -1,5 +1,6 @@
 import { useState, type CSSProperties, type ReactNode } from 'react';
-import { Circle, Edit, Info, Plus, Save, X } from 'react-feather';
+import { Circle, Edit, ExternalLink, Info, Plus, Save, X } from 'react-feather';
+import { Link } from '@tanstack/react-router';
 import { useTradesContext } from '../context/TradesContext';
 import { setLocalStorageItem, useLocalStorage } from '../hooks/useLocalStorage';
 import type { TradesRow, TradesUpdate } from '@lib/database/TradesApi';
@@ -163,6 +164,15 @@ function Row({ trade }: { trade: TradesRow }) {
                 >
                   {showDetails ? <Circle /> : <Info />}
                 </button>
+                <Link
+                  role="button"
+                  to="/trade/$id"
+                  params={{ id: String(trade.id) }}
+                  aria-label="Open trade"
+                  title="Open trade"
+                >
+                  <ExternalLink size={16} />
+                </Link>
                 {/* <button aria-label="Delete" title="Delete" onClick={handleDelete}>
               <Trash />
               </button> */}

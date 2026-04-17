@@ -1,6 +1,5 @@
 import { supabase } from '@lib/database/SupabaseClient';
 import { Book, LogOut } from 'react-feather';
-import MonthHeader from '../lib/components/MonthHeader';
 import { Link } from '@tanstack/react-router';
 import { useSessionContext } from '../lib/context/SessionContext';
 
@@ -24,7 +23,6 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
           <LogOut />
         </button>
       </header>
-      <MonthHeader />
       {children}
       <footer></footer>
     </>
