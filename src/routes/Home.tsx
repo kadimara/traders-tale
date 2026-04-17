@@ -21,7 +21,6 @@ export default function Home() {
 
   useEffect(() => {
     if (!session?.user?.id) return;
-    setPlanContent('');
     monthlyPlanSelectByMonth(monthKey, session.user.id)
       .then((plan) => setPlanContent(plan?.content ?? ''))
       .catch((err) => console.error('Failed to fetch plan:', err));
