@@ -6,8 +6,8 @@ import {
   useState,
   type PropsWithChildren,
 } from 'react';
-import { navigate } from '../components/Router';
 import { supabase } from '@lib/database/SupabaseClient';
+import { router } from '../../router';
 
 type SessionContextType = {
   session: Session | null;
@@ -25,7 +25,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
-      if (!session) navigate('auth');
+      if (!session) router.navigate({ to: '/auth' });
     });
 
     // Listen for changes
@@ -33,7 +33,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      if (!session) navigate('auth');
+      if (!session) router.navigate({ to: '/auth' });
     });
 
     return () => subscription.unsubscribe();
