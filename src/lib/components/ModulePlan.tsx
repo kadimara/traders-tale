@@ -42,6 +42,7 @@ export function ModulePlan({
       <MarkdownField
         value={isEditing ? editText : value}
         editing={isEditing}
+        placeholder={placeholder}
         onChange={setEditText}
       />
       <button
