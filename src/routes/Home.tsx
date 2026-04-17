@@ -1,3 +1,4 @@
+import MonthHeader from '@lib/components/MonthHeader';
 import ModuleAverage from '@lib/components/ModuleAverage';
 import { ModuleMonth } from '@lib/components/ModuleMonth';
 import { ModuleWinRate } from '@lib/components/ModuleWinRate';
@@ -29,9 +30,11 @@ export default function Home() {
   const handlePlanChange = (content: string) => {
     if (!session?.user?.id) return;
     setPlanContent(content);
-    monthlyPlanUpsert({ user_id: session.user.id, month_year: monthKey, content }).catch(
-      (err) => console.error('Failed to save plan:', err)
-    );
+    monthlyPlanUpsert({
+      user_id: session.user.id,
+      month_year: monthKey,
+      content,
+    }).catch((err) => console.error('Failed to save plan:', err));
   };
 
   const today = new Date();
@@ -46,13 +49,36 @@ export default function Home() {
   });
 
   return (
-    <main style={{ maxWidth: 1400, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: 16 }}>
+    <main
+      style={{
+        maxWidth: 1280,
+        margin: '0 auto',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 16,
+      }}
+    >
+      <MonthHeader />
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns:
+            'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
+          gap: 16,
+        }}
+      >
         <ModuleProfitFactor trades={trades} />
         <ModuleWinRate trades={trades} />
         <ModuleAverage trades={trades} />
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 560px), 1fr))', gap: 16 }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns:
+            'repeat(auto-fit, minmax(min(100%, 560px), 1fr))',
+          gap: 16,
+        }}
+      >
         <ModuleMonth trades={trades} monthDate={monthDate} />
         <ModulePlan
           key={monthKey}

@@ -16,6 +16,10 @@ type SessionContextType = {
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
 
+function isPublicRoute() {
+  return window.location.pathname.startsWith('/traders-tale/trade/');
+}
+
 export function SessionProvider({ children }: PropsWithChildren) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -25,7 +29,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
-      if (!session) router.navigate({ to: '/auth' });
+      if (!session && !isPublicRoute()) router.navigate({ to: '/auth' });
     });
 
     // Listen for changes
@@ -33,7 +37,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      if (!session) router.navigate({ to: '/auth' });
+      if (!session && !isPublicRoute()) router.navigate({ to: '/auth' });
     });
 
     return () => subscription.unsubscribe();
