@@ -28,19 +28,7 @@
 .document {
   background-color: var(--color-bg-highlight);
   border-radius: var(--border-radius);
-  border: 1px solid transparent;
-  padding: 80px 48px;
+  padding: 32px;
   min-height: 200px;
   width: 100%;
-}
-
-.document.editing {
-  border-color: var(--color-main);
-}
-
-.document textarea {
-  background: transparent;
-  border: none;
-  padding: 0;
-  min-height: 200px;
 }

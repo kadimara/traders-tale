@@ -12,7 +12,7 @@ import {
 } from '@lib/utils/TradeUtils';
 import { Input } from './Input';
 import { InputNumber } from './InputNumber';
-import { TradeDetails } from './TradeDetails';
+import { TradeDocument } from './TradeDocument';
 
 export function TradesTable() {
   const { trades, insertTrade } = useTradesContext();
@@ -80,8 +80,8 @@ function Row({ trade }: { trade: TradesRow }) {
 
   const [d, setShowDetails] = useState(false);
   const toggleDetails = () => setShowDetails((v) => !v);
-  const editable = tradeLocal !== null;
-  const showDetails = d || editable;
+  const editing = tradeLocal !== null;
+  const showDetails = d || editing;
 
   const handleEdit = () => {
     setTradeLocal({});
@@ -124,14 +124,14 @@ function Row({ trade }: { trade: TradesRow }) {
         style={{
           background: showDetails ? 'var(--color-bg-highlight)' : undefined,
           borderBottomColor: showDetails ? 'transparent' : undefined,
-          color: !trade.executed && !editable ? 'gray' : undefined,
+          color: !trade.executed && !editing ? 'gray' : undefined,
         }}
       >
         {columns.map((col) => {
           const render = col.render ?? ((row: TradesRow) => row[col.key]);
           return (
             <th key={col.key} style={col.style}>
-              {render(tradeCombined, editable, (value) =>
+              {render(tradeCombined, editing, (value) =>
                 handleChange(col.key, value),
               )}
             </th>
@@ -139,7 +139,7 @@ function Row({ trade }: { trade: TradesRow }) {
         })}
         <th style={{ justifyItems: 'center', width: 100 }}>
           <div className="flex gap-1">
-            {editable ? (
+            {editing ? (
               <>
                 <button aria-label="Save" title="Save" onClick={handleSave}>
                   <Save />
@@ -191,10 +191,15 @@ function Row({ trade }: { trade: TradesRow }) {
               background: 'var(--color-bg-highlight)',
             }}
           >
-            <TradeDetails
+            <TradeDocument
               trade={tradeCombined}
-              disabled={!editable}
-              onChange={handleChange}
+              editing={editing}
+              onChange={(plan) => {
+                handleChange('plan', plan);
+                handleChange('review', null);
+                handleChange('url1', null);
+                handleChange('url2', null);
+              }}
             />
           </td>
         </tr>

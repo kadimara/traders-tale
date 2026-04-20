@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { getImageSrcFromTradingViewUrl } from '@lib/utils/TradeUtils';
 
 const markdownComponents: React.ComponentProps<
@@ -9,6 +10,16 @@ const markdownComponents: React.ComponentProps<
   h2: 'h3',
   h3: 'h4',
   h4: 'h5',
+  input: ({ type, checked }) => {
+    if (type !== 'checkbox') return null;
+    return (
+      <input
+        type="checkbox"
+        checked={checked}
+        readOnly
+      />
+    );
+  },
   a: ({ href, children }) => {
     const imgSrc = href ? getImageSrcFromTradingViewUrl(href) : '';
     return (
@@ -142,5 +153,9 @@ export function MarkdownField({
 
   if (!value) return null;
 
-  return <ReactMarkdown components={markdownComponents}>{value}</ReactMarkdown>;
+  return (
+    <ReactMarkdown components={markdownComponents} remarkPlugins={[remarkGfm]}>
+      {value}
+    </ReactMarkdown>
+  );
 }
