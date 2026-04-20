@@ -246,6 +246,20 @@ input[type='radio'] {
   accent-color: var(--color-main);
 }
 
+input[type='checkbox'][readonly] {
+  pointer-events: none;
+  cursor: default;
+  vertical-align: middle;
+  width: auto;
+}
+
+li:has(> input[type='checkbox'][readonly]:first-child) {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
 /* Section */
 section {
   margin: 0 auto;
