@@ -50,12 +50,10 @@ export default function Home() {
 
   return (
     <main
+      className="flex flex-col gap-3"
       style={{
         maxWidth: 1280,
         margin: '0 auto',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 16,
       }}
     >
       <MonthHeader />

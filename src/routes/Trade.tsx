@@ -50,54 +50,50 @@ export default function Trade() {
           #{trade.id} · {new Date(trade.created_at).toLocaleDateString()}
         </span>
       </div>
-
-      <div className="bg-highlight rounded" style={{ overflow: 'hidden' }}>
-        <table>
-          <thead>
-            <tr>
-              <th>ACCOUNT</th>
-              <th>AMOUNT</th>
-              <th>SL</th>
-              <th>ENTRY</th>
-              <th>TARGET</th>
-              <th>EXIT</th>
-              <th>FEES</th>
-              <th>RISK</th>
-              <th>PNL</th>
-              <th>EXEC</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th>{toUSD(trade.account)}</th>
-              <th>{toUSD(trade.amount)}</th>
-              <th>{toUSD(trade.stop)}</th>
-              <th>{toUSD(trade.entry)}</th>
-              <th>{toUSD(trade.target)}</th>
-              <th>{toUSD(trade.exit) ?? '—'}</th>
-              <th>
-                {trade.fees != null ? (trade.fees * 100).toFixed(2) + '%' : '—'}
-              </th>
-              <th>
-                {trade.risk != null ? (trade.risk * 100).toFixed(2) + '%' : '—'}
-              </th>
-              <th>
-                <span
-                  className={
-                    trade.executed ? 'number' + Math.sign(trade.pnl ?? 0) : ''
-                  }
-                >
-                  {toUSD(trade.pnl) ?? '—'}
-                </span>
-              </th>
-              <th>
-                <input type="checkbox" checked={trade.executed} readOnly />
-              </th>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
+      <table>
+        <thead className="text-muted" style={{ fontSize: '0.82rem' }}>
+          <tr>
+            <th>ACCOUNT</th>
+            <th>AMOUNT</th>
+            <th>SL</th>
+            <th>ENTRY</th>
+            <th>TARGET</th>
+            <th>EXIT</th>
+            <th>FEES</th>
+            <th>RISK</th>
+            <th>PNL</th>
+            <th>EXEC</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style={{ pointerEvents: 'none' }}>
+            <th>{toUSD(trade.account)}</th>
+            <th>{toUSD(trade.amount)}</th>
+            <th>{toUSD(trade.stop)}</th>
+            <th>{toUSD(trade.entry)}</th>
+            <th>{toUSD(trade.target)}</th>
+            <th>{toUSD(trade.exit) ?? '—'}</th>
+            <th>
+              {trade.fees != null ? (trade.fees * 100).toFixed(2) + '%' : '—'}
+            </th>
+            <th>
+              {trade.risk != null ? (trade.risk * 100).toFixed(2) + '%' : '—'}
+            </th>
+            <th>
+              <span
+                className={
+                  trade.executed ? 'number' + Math.sign(trade.pnl ?? 0) : ''
+                }
+              >
+                {toUSD(trade.pnl) ?? '—'}
+              </span>
+            </th>
+            <th>
+              <input type="checkbox" checked={trade.executed} readOnly />
+            </th>
+          </tr>
+        </tbody>
+      </table>
       <TradeDocument trade={trade} onSave={handleSave} />
     </main>
   );
