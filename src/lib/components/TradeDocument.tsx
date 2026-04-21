@@ -34,7 +34,7 @@ export function TradeDocument({
   };
 
   return (
-    <div className="document" style={{ position: 'relative' }}>
+    <div className="document relative">
       <MarkdownField
         value={value}
         editing={editing}

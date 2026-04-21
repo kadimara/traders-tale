@@ -194,11 +194,7 @@ function Row({ trade }: { trade: TradesRow }) {
         <tr>
           <td
             colSpan={columns.length + 1}
-            style={{
-              textAlign: 'left',
-              padding: '8px',
-              background: 'var(--color-bg-highlight)',
-            }}
+            className="text-left p-2 bg-highlight"
           >
             <TradeDocument
               trade={tradeCombined}
