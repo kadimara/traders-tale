@@ -4,7 +4,6 @@ import { ArrowLeft } from 'react-feather';
 import {
   tradesSelectById,
   type TradesRow,
-  type TradesUpdate,
 } from '@lib/database/TradesApi';
 import { useTradesContext } from '@lib/context/TradesContext';
 import { toUSD } from '@lib/utils/MathUtils';
@@ -36,10 +35,10 @@ export default function Trade() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  const handleSave = async (plan: string) => {
+  const handleSave = async (journal: string) => {
     if (!trade) return;
-    await updateTrade(trade.id, { plan, review: null, url1: null, url2: null } as TradesUpdate);
-    setTrade((prev) => prev && { ...prev, plan, review: null, url1: null, url2: null });
+    await updateTrade(trade.id, { journal });
+    setTrade((prev) => prev && { ...prev, journal });
   };
 
   if (loading) {

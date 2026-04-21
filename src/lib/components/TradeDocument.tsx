@@ -3,18 +3,6 @@ import { Edit, Save } from 'react-feather';
 import type { TradesRow } from '@lib/database/TradesApi';
 import { MarkdownField } from './MarkdownField';
 
-export function composePlan(trade: TradesRow): string {
-  const parts: string[] = [];
-  if (trade.plan) parts.push(trade.plan);
-  if (trade.review && !trade.plan?.includes(trade.review))
-    parts.push(trade.review);
-  if (trade.url1 && !trade.plan?.includes(trade.url1))
-    parts.push(`[Chart 1](${trade.url1})`);
-  if (trade.url2 && !trade.plan?.includes(trade.url2))
-    parts.push(`[Chart 2](${trade.url2})`);
-  return parts.join('\n\n');
-}
-
 type TradeDocumentProps = {
   trade: TradesRow;
   editing?: boolean;
@@ -29,14 +17,14 @@ export function TradeDocument({
   onChange,
 }: TradeDocumentProps) {
   const [editingInside, setEditing] = useState(false);
-  const [draft, setDraft] = useState(() => composePlan(trade));
+  const [draft, setDraft] = useState(() => trade.journal ?? '');
 
   const isStateInside = typeof onSave === 'function';
-  const value = isStateInside ? draft : composePlan(trade);
+  const value = isStateInside ? draft : trade.journal ?? '';
   const editing = isStateInside ? editingInside : editingOutside;
 
   const handleEdit = () => {
-    setDraft(composePlan(trade));
+    setDraft(trade.journal ?? '');
     setEditing(true);
   };
 

@@ -194,12 +194,7 @@ function Row({ trade }: { trade: TradesRow }) {
             <TradeDocument
               trade={tradeCombined}
               editing={editing}
-              onChange={(plan) => {
-                handleChange('plan', plan);
-                handleChange('review', null);
-                handleChange('url1', null);
-                handleChange('url2', null);
-              }}
+              onChange={(journal) => handleChange('journal', journal)}
             />
           </td>
         </tr>

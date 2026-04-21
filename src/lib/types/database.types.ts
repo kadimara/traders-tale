@@ -21,7 +21,7 @@ export type Database = {
           id: string
           month_year: string
           updated_at: string
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           content: string
@@ -29,7 +29,7 @@ export type Database = {
           id?: string
           month_year: string
           updated_at?: string
-          user_id?: string | null
+          user_id?: string
         }
         Update: {
           content?: string
@@ -37,7 +37,34 @@ export type Database = {
           id?: string
           month_year?: string
           updated_at?: string
-          user_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      playbook: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: number
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: never
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: never
+          title?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -51,17 +78,14 @@ export type Database = {
           exit: number | null
           fees: number | null
           id: number
+          journal: string | null
           long_short: string
-          plan: string | null
           pnl: number | null
-          review: string | null
           risk: number | null
           stop: number
           symbol: string
           target: number
           time_frame: string
-          url1: string | null
-          url2: string | null
           user_id: string
         }
         Insert: {
@@ -73,17 +97,14 @@ export type Database = {
           exit?: number | null
           fees?: number | null
           id?: number
+          journal?: string | null
           long_short: string
-          plan?: string | null
           pnl?: number | null
-          review?: string | null
           risk?: number | null
           stop: number
           symbol: string
           target: number
           time_frame: string
-          url1?: string | null
-          url2?: string | null
           user_id?: string
         }
         Update: {
@@ -95,17 +116,14 @@ export type Database = {
           exit?: number | null
           fees?: number | null
           id?: number
+          journal?: string | null
           long_short?: string
-          plan?: string | null
           pnl?: number | null
-          review?: string | null
           risk?: number | null
           stop?: number
           symbol?: string
           target?: number
           time_frame?: string
-          url1?: string | null
-          url2?: string | null
           user_id?: string
         }
         Relationships: []

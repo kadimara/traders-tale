@@ -42,6 +42,8 @@ export function SessionProvider({ children }: PropsWithChildren) {
 
     return () => subscription.unsubscribe();
   }, []);
+  if (loading) return null;
+
   return (
     <SessionContext.Provider
       value={{
