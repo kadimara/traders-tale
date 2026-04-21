@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from '@tanstack/react-router';
-import { ArrowLeft } from 'react-feather';
 import { tradesSelectById, type TradesRow } from '@lib/database/TradesApi';
 import { useTradesContext } from '@lib/context/TradesContext';
 import { toUSD } from '@lib/utils/MathUtils';
