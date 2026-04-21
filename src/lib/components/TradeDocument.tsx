@@ -20,7 +20,7 @@ export function TradeDocument({
   const [draft, setDraft] = useState(() => trade.journal ?? '');
 
   const isStateInside = typeof onSave === 'function';
-  const value = isStateInside ? draft : trade.journal ?? '';
+  const value = isStateInside ? draft : (trade.journal ?? '');
   const editing = isStateInside ? editingInside : editingOutside;
 
   const handleEdit = () => {
@@ -34,10 +34,7 @@ export function TradeDocument({
   };
 
   return (
-    <div
-      className={editing ? 'document editing' : 'document'}
-      style={{ position: 'relative' }}
-    >
+    <div className="document" style={{ position: 'relative' }}>
       <MarkdownField
         value={value}
         editing={editing}

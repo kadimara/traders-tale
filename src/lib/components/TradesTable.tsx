@@ -1,11 +1,13 @@
 import { useState, type CSSProperties, type ReactNode } from 'react';
-import { Circle, Edit, ExternalLink, Info, Plus, Save, X } from 'react-feather';
+import { Circle, Download, Edit, ExternalLink, Info, Plus, Save, X } from 'react-feather';
 import { Link } from '@tanstack/react-router';
 import { useTradesContext } from '../context/TradesContext';
+import { useMonthContext } from '../context/MonthContext';
 import { setLocalStorageItem, useLocalStorage } from '../hooks/useLocalStorage';
 import type { TradesRow, TradesUpdate } from '@lib/database/TradesApi';
 import { toUSD } from '@lib/utils/MathUtils';
 import {
+  exportTradesToCsv,
   getTradeLongShort,
   getTradePnl,
   getTradeRisk,
@@ -16,6 +18,8 @@ import { TradeDocument } from './TradeDocument';
 
 export function TradesTable() {
   const { trades, insertTrade } = useTradesContext();
+  const { monthKey } = useMonthContext();
+
   const handleAddTrade = async () => {
     const trade = await insertTrade({
       account: 0,
@@ -39,9 +43,14 @@ export function TradesTable() {
               <th key={col.key}>{col.label}</th>
             ))}
             <th>
-              <button aria-label="Add" title="Add" onClick={handleAddTrade}>
-                <Plus />
-              </button>
+              <div className="flex gap-1" style={{ justifyContent: 'center' }}>
+                <button aria-label="Export CSV" title="Export CSV" onClick={() => exportTradesToCsv(trades, monthKey)}>
+                  <Download />
+                </button>
+                <button aria-label="Add" title="Add" onClick={handleAddTrade}>
+                  <Plus />
+                </button>
+              </div>
             </th>
           </tr>
         </thead>

@@ -102,6 +102,47 @@ export function getSpotPnl({ amount, entry, exit }: TradesSpotRow): number {
 // 	return numerator + ' / ' + denominator;
 // }
 
+export function exportTradesToCsv(trades: TradesRow[], monthKey: string) {
+  const headers = [
+    'date', 'symbol', 'TF', 'L/S', 'account', 'amount',
+    'SL', 'entry', 'target', 'exit', 'fees', 'risk', 'PnL', 'executed', 'journal',
+  ];
+
+  const escape = (val: unknown) => {
+    if (val == null) return '';
+    const str = String(val);
+    return str.includes(',') || str.includes('"') || str.includes('\n')
+      ? `"${str.replace(/"/g, '""')}"`
+      : str;
+  };
+
+  const rows = trades.map((t) => [
+    new Date(t.created_at).toLocaleString(),
+    t.symbol,
+    t.time_frame,
+    t.long_short,
+    t.account,
+    t.amount,
+    t.stop,
+    t.entry,
+    t.target,
+    t.exit ?? '',
+    t.fees != null ? (t.fees * 100).toFixed(2) + '%' : '',
+    t.risk != null ? (t.risk * 100).toFixed(2) + '%' : '',
+    t.pnl ?? '',
+    t.executed ? 'yes' : 'no',
+    t.journal ?? '',
+  ].map(escape).join(','));
+
+  const csv = [headers.join(','), ...rows].join('\n');
+  const month = monthKey.slice(0, 7);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+  a.download = `trades-${month}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
 export function getImageSrcFromTradingViewUrl(url: string) {
   if (!url) {
     return '';
