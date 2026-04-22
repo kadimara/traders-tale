@@ -15,6 +15,7 @@ export function ModulePlan({
   disabled,
   placeholder,
   style,
+  className,
   onChange,
   ...props
 }: ModulePlanProps) {
@@ -35,7 +36,7 @@ export function ModulePlan({
 
   return (
     <Module
-      className="flex-col gap-1"
+      className={`flex-col gap-1 ${className ?? ''}`}
       style={{ position: 'relative', justifyContent: 'flex-start', ...style }}
       {...props}
     >

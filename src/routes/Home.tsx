@@ -1,6 +1,6 @@
 import MonthHeader from '@lib/components/MonthHeader';
 import ModuleAverage from '@lib/components/ModuleAverage';
-import { ModuleMonth } from '@lib/components/ModuleMonth';
+import { ModuleCalendar } from '@lib/components/ModuleCalendar';
 import { ModuleWinRate } from '@lib/components/ModuleWinRate';
 import { ModuleProfitFactor } from '@lib/components/ModuleProfitFactor';
 import { ModulePlan } from '@lib/components/ModulePlan';
@@ -69,16 +69,14 @@ export default function Home() {
         <ModuleWinRate trades={trades} />
         <ModuleAverage trades={trades} />
       </div>
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns:
-            'repeat(auto-fit, minmax(min(100%, 560px), 1fr))',
-          gap: 16,
-        }}
-      >
-        <ModuleMonth trades={trades} monthDate={monthDate} />
+      <div className="flex flex-wrap gap-3">
+        <ModuleCalendar
+          trades={trades}
+          monthDate={monthDate}
+          className="flex-1 self-start"
+        />
         <ModulePlan
+          className="flex-1"
           key={monthKey}
           value={planContent}
           onChange={handlePlanChange}

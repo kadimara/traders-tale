@@ -2,8 +2,8 @@ import type { TradesRow } from '@lib/database/TradesApi';
 import { toUSD } from '@lib/utils/MathUtils';
 import { Module, type ModuleProps } from './Module';
 
-type ModuleMonthProps = { trades: TradesRow[]; monthDate: Date } & ModuleProps;
-export function ModuleMonth({ trades, monthDate, ...props }: ModuleMonthProps) {
+type ModuleCalendarProps = { trades: TradesRow[]; monthDate: Date } & ModuleProps;
+export function ModuleCalendar({ trades, monthDate, className, ...props }: ModuleCalendarProps) {
   const today = new Date();
   const year = monthDate.getFullYear();
   const month = monthDate.getMonth();
@@ -32,7 +32,7 @@ export function ModuleMonth({ trades, monthDate, ...props }: ModuleMonthProps) {
   });
 
   return (
-    <Module className="flex-col" {...props}>
+    <Module className={`flex-col ${className ?? ''}`} {...props}>
       <div
         style={{
           display: 'grid',

@@ -24,7 +24,7 @@ export async function monthlyPlanUpsert(plan: MonthlyPlanInsert) {
   const { data, error } = await supabase
     .from('monthly_plan')
     .upsert([plan], {
-      onConflict: 'month_year',
+      onConflict: 'month_year,user_id',
     })
     .select()
     .single();

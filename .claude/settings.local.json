@@ -6,7 +6,8 @@
       "Bash(kill *)",
       "Bash(cmd *)",
       "Bash(npm install *)",
-      "Bash(grep -E \"\\\\.tsx$\")"
+      "Bash(grep -E \"\\\\.tsx$\")",
+      "mcp__claude_ai_Supabase__list_projects"
     ]
   }
 }
