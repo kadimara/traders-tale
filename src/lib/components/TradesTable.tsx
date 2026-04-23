@@ -140,8 +140,10 @@ function Row({ trade }: { trade: TradesRow }) {
           const render = col.render ?? ((row: TradesRow) => row[col.key]);
           return (
             <th key={col.key} style={col.style}>
-              {render(tradeCombined, editing, (value) =>
-                handleChange(col.key, value),
+              {render(
+                tradeCombined,
+                editing,
+                (value) => handleChange(col.key, value),
               )}
             </th>
           );
@@ -180,7 +182,7 @@ function Row({ trade }: { trade: TradesRow }) {
                   aria-label="Open trade"
                   title="Open trade"
                 >
-                  <ExternalLink size={16} />
+                  <ExternalLink />
                 </Link>
                 {/* <button aria-label="Delete" title="Delete" onClick={handleDelete}>
               <Trash />

@@ -460,10 +460,12 @@ dialog footer {
 }
 
 /* OTHER */
-button svg {
+
+button svg,
+[role='button'] svg {
   vertical-align: middle;
-  width: 14px;
-  height: 14px;
+  width: 1.2em;
+  height: 1.2em;
 }
 
 input {

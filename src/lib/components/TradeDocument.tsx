@@ -48,7 +48,7 @@ export function TradeDocument({
           style={{ position: 'absolute', top: 8, right: 8 }}
           onClick={editing ? handleSave : handleEdit}
         >
-          {editing ? <Save size={16} /> : <Edit size={16} />}
+          {editing ? <Save /> : <Edit />}
         </button>
       )}
     </div>

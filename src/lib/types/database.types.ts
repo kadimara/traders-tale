@@ -80,6 +80,7 @@ export type Database = {
           id: number
           journal: string | null
           long_short: string
+          playbook: boolean
           pnl: number | null
           risk: number | null
           stop: number
@@ -99,6 +100,7 @@ export type Database = {
           id?: number
           journal?: string | null
           long_short: string
+          playbook?: boolean
           pnl?: number | null
           risk?: number | null
           stop: number
@@ -118,6 +120,7 @@ export type Database = {
           id?: number
           journal?: string | null
           long_short?: string
+          playbook?: boolean
           pnl?: number | null
           risk?: number | null
           stop?: number

@@ -8,13 +8,44 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
   return (
     <>
       <header className="flex gap-1 align-items-center">
-        <Book size={24} />
-        <Link to="/" activeProps={{ style: { color: 'var(--color-text)', textDecoration: 'underline' } }}>DASHBOARD</Link>
-        <Link to="/spot" activeProps={{ style: { color: 'var(--color-text)', textDecoration: 'underline' } }}>SPOT</Link>
-        <Link to="/futures" activeProps={{ style: { color: 'var(--color-text)', textDecoration: 'underline' } }}>FUTURES</Link>
+        <Book size={32} />
+        <Link
+          to="/"
+          activeProps={{
+            style: { color: 'var(--color-text)', textDecoration: 'underline' },
+          }}
+        >
+          DASHBOARD
+        </Link>
+        <Link
+          to="/spot"
+          activeProps={{
+            style: { color: 'var(--color-text)', textDecoration: 'underline' },
+          }}
+        >
+          SPOT
+        </Link>
+        <Link
+          to="/journal"
+          activeProps={{
+            style: { color: 'var(--color-text)', textDecoration: 'underline' },
+          }}
+        >
+          JOURNAL
+        </Link>
+        <Link
+          to="/playbook"
+          activeProps={{
+            style: { color: 'var(--color-text)', textDecoration: 'underline' },
+          }}
+        >
+          PLAYBOOK
+        </Link>
         {/* <a>PROFILE</a> */}
         <span className="flex-1" />
-        <span className="text-muted">{session?.user.user_metadata['display_name'] || session?.user.email}</span>
+        <span className="text-muted">
+          {session?.user.user_metadata['display_name'] || session?.user.email}
+        </span>
         <button
           onClick={() => supabase.auth.signOut()}
           title="logout"

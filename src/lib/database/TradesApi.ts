@@ -70,3 +70,14 @@ export async function tradesDelete(id: number) {
   const { error } = await supabase.from('trades').delete().eq('id', id);
   if (error) throw error;
 }
+
+export async function tradesSelectPlaybook() {
+  const { data, error } = await supabase
+    .from('trades')
+    .select('*')
+    .eq('playbook', true)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data;
+}

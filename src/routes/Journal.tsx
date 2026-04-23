@@ -1,7 +1,7 @@
 import { TradesTable } from '../lib/components/TradesTable';
 import MonthHeader from '@lib/components/MonthHeader';
 
-export default function Futures() {
+export default function Journal() {
   return (
     <main>
       <MonthHeader />

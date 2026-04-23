@@ -10,7 +10,8 @@ import Layout from './routes/Layout';
 import Auth from './routes/Auth';
 import Home from './routes/Home';
 import Spot from './routes/Spot';
-import Futures from './routes/Futures';
+import Journal from './routes/Journal';
+import Playbook from './routes/Playbook';
 import Trade from './routes/Trade';
 
 const rootRoute = createRootRoute({
@@ -50,10 +51,16 @@ const spotRoute = createRoute({
   component: Spot,
 });
 
-const futuresRoute = createRoute({
+const journalRoute = createRoute({
   getParentRoute: () => layoutRoute,
-  path: '/futures',
-  component: Futures,
+  path: '/journal',
+  component: Journal,
+});
+
+const playbookRoute = createRoute({
+  getParentRoute: () => layoutRoute,
+  path: '/playbook',
+  component: Playbook,
 });
 
 const tradeRoute = createRoute({
@@ -65,7 +72,7 @@ const tradeRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   authRoute,
   tradeRoute,
-  layoutRoute.addChildren([homeRoute, spotRoute, futuresRoute, tradeRoute]),
+  layoutRoute.addChildren([homeRoute, spotRoute, journalRoute, playbookRoute, tradeRoute]),
 ]);
 
 export const router = createRouter({
