@@ -224,7 +224,21 @@ const columns: {
     label: 'DATE',
     key: 'created_at',
     style: { width: 200 },
-    render: ({ created_at }) => new Date(created_at).toLocaleString(),
+    render: ({ created_at }, editable, onChange) => {
+      if (editable) {
+        // datetime-local expects "YYYY-MM-DDTHH:mm"
+        const localValue = new Date(created_at).toISOString().slice(0, 16);
+        return (
+          <input
+            type="datetime-local"
+            defaultValue={localValue}
+            onChange={(e) => onChange(new Date(e.target.value).toISOString())}
+            style={{ width: 180 }}
+          />
+        );
+      }
+      return new Date(created_at).toLocaleString();
+    },
   },
   {
     label: 'SYMBOL',
