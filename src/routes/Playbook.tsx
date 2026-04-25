@@ -1,19 +1,24 @@
+import type { TradesRow } from '@lib/database/TradesApi';
 import { tradesSelectPlaybook } from '@lib/database/TradesApi';
 import { useAsync } from '@lib/hooks/useAsync';
 import { Link } from '@tanstack/react-router';
-import { toUSD } from '@lib/utils/MathUtils';
-import type { TradesRow } from '@lib/database/TradesApi';
+
+function pnlPct(pnl: number, account: number): string {
+  const pct = (pnl / account) * 100;
+  const sign = pct >= 0 ? '+' : '';
+  return `${sign}${pct.toFixed(2)}%`;
+}
 
 // Strips markdown syntax from the journal and returns a plain-text excerpt.
 function journalExcerpt(journal: string | null, max = 120): string {
   if (!journal) return '';
   const plain = journal
-    .replace(/!\[.*?\]\(.*?\)/g, '')           // remove images  ![alt](url)
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')   // links [text](url) → text
-    .replace(/#{1,6}\s+/g, '')                 // remove heading markers # ## ###
+    .replace(/!\[.*?\]\(.*?\)/g, '') // remove images  ![alt](url)
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // links [text](url) → text
+    .replace(/#{1,6}\s+/g, '') // remove heading markers # ## ###
     .replace(/[*_]{1,3}([^*_\n]+)[*_]{1,3}/g, '$1') // bold/italic **x** _x_ → x
-    .replace(/`[^`]+`/g, '')                   // remove inline code `x`
-    .replace(/\n+/g, ' ')                      // collapse newlines to spaces
+    .replace(/`[^`]+`/g, '') // remove inline code `x`
+    .replace(/\n+/g, ' ') // collapse newlines to spaces
     .trim();
   return plain.length > max ? plain.slice(0, max).trimEnd() + '…' : plain;
 }
@@ -53,7 +58,7 @@ function PlaybookCard({ trade }: { trade: TradesRow }) {
         {excerpt}
       </p>
 
-      {trade.executed && trade.pnl != null && (
+      {trade.pnl != null && (
         <div
           style={{
             borderTop: '1px solid var(--color-border)',
@@ -63,7 +68,7 @@ function PlaybookCard({ trade }: { trade: TradesRow }) {
           }}
         >
           <span className={`number${pnlSign}`} style={{ fontWeight: 700 }}>
-            {toUSD(trade.pnl)}
+            {pnlPct(trade.pnl, trade.account)}
           </span>
         </div>
       )}
