@@ -67,8 +67,10 @@ export function MarkdownField({
   useEffect(() => {
     const el = textareaRef.current;
     if (!el) return;
+    const scrollY = window.scrollY;
     el.style.height = 'auto';
     el.style.height = `${el.scrollHeight}px`;
+    window.scrollTo(0, scrollY);
     if (pendingCursorRef.current !== null) {
       const pos = pendingCursorRef.current;
       pendingCursorRef.current = null;

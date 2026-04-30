@@ -1,8 +1,6 @@
 import MonthHeader from '@lib/components/MonthHeader';
-import ModuleAverage from '@lib/components/ModuleAverage';
 import { ModuleCalendar } from '@lib/components/ModuleCalendar';
-import { ModuleWinRate } from '@lib/components/ModuleWinRate';
-import { ModuleProfitFactor } from '@lib/components/ModuleProfitFactor';
+import { ModuleDashboardMetrics } from '@lib/components/ModuleDashboardMetrics';
 import { ModulePlan } from '@lib/components/ModulePlan';
 import { useTradesContext } from '@lib/context/TradesContext';
 import { useSessionContext } from '@lib/context/SessionContext';
@@ -61,13 +59,11 @@ export default function Home() {
         style={{
           display: 'grid',
           gridTemplateColumns:
-            'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
+            'repeat(auto-fit, minmax(min(100%, 160px), 1fr))',
           gap: 16,
         }}
       >
-        <ModuleProfitFactor trades={trades} />
-        <ModuleWinRate trades={trades} />
-        <ModuleAverage trades={trades} />
+        <ModuleDashboardMetrics trades={trades} />
       </div>
       <div className="flex flex-wrap gap-3">
         <ModuleCalendar
