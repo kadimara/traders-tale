@@ -49,6 +49,10 @@ export function getTradeRisk(trade: TradesRow): number {
   return round(ratio * risk, 4);
 }
 
+export function getTradePnlPercent(trade: TradesRow): number {
+  return trade.account ? round(((trade.pnl ?? 0) / trade.account) * 100, 2) : 0;
+}
+
 export function getTradeLongShort({
   stop,
   entry,

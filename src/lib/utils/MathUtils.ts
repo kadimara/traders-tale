@@ -13,6 +13,10 @@ export function toUSD(value: number | null | undefined) {
   );
 }
 
+export function toPercent(value: number | null | undefined) {
+  return value != null ? `${value >= 0 ? '+' : ''}${value.toFixed(2)}%` : '';
+}
+
 export function toEUR(value: number | null | undefined) {
   return (
     value?.toLocaleString('nl-NL', {

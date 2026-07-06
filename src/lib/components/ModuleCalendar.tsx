@@ -1,5 +1,6 @@
 import type { TradesRow } from '@lib/database/TradesApi';
-import { toUSD } from '@lib/utils/MathUtils';
+import { toPercent } from '@lib/utils/MathUtils';
+import { getTradePnlPercent } from '@lib/utils/TradeUtils';
 import { Module, type ModuleProps } from './Module';
 
 type ModuleCalendarProps = { trades: TradesRow[]; monthDate: Date } & ModuleProps;
@@ -83,7 +84,7 @@ export function ModuleCalendar({ trades, monthDate, className, ...props }: Modul
                     className={`number${Math.sign(totalPnl)}`}
                     style={{ fontWeight: 600, fontSize: 16 }}
                   >
-                    {toUSD(totalPnl)}
+                    {toPercent(totalPnl)}
                   </span>
                   <span>
                     {totalTrades} {totalTrades === 1 ? 'trade' : 'trades'}
@@ -110,7 +111,7 @@ const calculateDailyStats = (date: Date, trades: TradesRow[]) => {
     return isSameLocalDay(t, date);
   });
   const totalPnl = dailyTrades.reduce(
-    (acc, trade) => acc + (trade.executed ? trade.pnl || 0 : 0),
+    (acc, trade) => acc + (trade.executed ? getTradePnlPercent(trade) : 0),
     0,
   );
   return { totalTrades: dailyTrades.length, totalPnl };
