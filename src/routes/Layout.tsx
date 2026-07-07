@@ -1,4 +1,5 @@
 import { supabase } from '@lib/database/SupabaseClient';
+import { isMockMode } from '@lib/mock/mockMode';
 import { Book, LogOut } from 'react-feather';
 import { Link } from '@tanstack/react-router';
 import { useSessionContext } from '../lib/context/SessionContext';
@@ -47,7 +48,11 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
           {session?.user.user_metadata['display_name'] || session?.user.email}
         </span>
         <button
-          onClick={() => supabase.auth.signOut()}
+          onClick={() =>
+            isMockMode
+              ? console.info('[mock mode] sign-out is a no-op')
+              : supabase.auth.signOut()
+          }
           title="logout"
           aria-label="logout"
         >

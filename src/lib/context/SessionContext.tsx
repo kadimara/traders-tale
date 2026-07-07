@@ -7,6 +7,8 @@ import {
   type PropsWithChildren,
 } from 'react';
 import { supabase } from '@lib/database/SupabaseClient';
+import { isMockMode } from '@lib/mock/mockMode';
+import { MOCK_SESSION } from '@lib/mock/mockData';
 import { router } from '../../router';
 
 type SessionContextType = {
@@ -21,10 +23,14 @@ function isPublicRoute() {
 }
 
 export function SessionProvider({ children }: PropsWithChildren) {
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState<Session | null>(
+    isMockMode ? MOCK_SESSION : null,
+  );
+  const [loading, setLoading] = useState(!isMockMode);
 
   useEffect(() => {
+    if (isMockMode) return;
+
     // Get current session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
