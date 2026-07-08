@@ -41,7 +41,12 @@ SessionProvider       → Supabase auth session, redirects to /auth if unauthent
 
 ### Database layer (`src/lib/database/`)
 
-All API functions use the singleton `supabase` client from `SupabaseClient.ts`, which reads `VITE_SUPABASE_URL` and `VITE_SUPABASE_KEY` from `.env.local`. They throw the Supabase error directly on failure.
+All API functions use the singleton `supabase` client from `SupabaseClient.ts`. It picks its Supabase project based on `import.meta.env.DEV` (Vite's dev-server flag):
+
+- **`npm run dev`** → `VITE_SUPABASE_DEV_URL` / `VITE_SUPABASE_DEV_KEY` (the `traders-tale-dev` project)
+- **`npm run build`/`npm run deploy`** → `VITE_SUPABASE_URL` / `VITE_SUPABASE_KEY` (the `traders-tale` production project)
+
+All four vars are read from `.env.local` (see `.env.example` for the expected names). API functions throw the Supabase error directly on failure.
 
 - `TradesApi.ts` — futures trades CRUD; types re-exported from `database.types.ts`
 - `SpotApi.ts` — spot trades CRUD
