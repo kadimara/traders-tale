@@ -1,5 +1,5 @@
 import type { TradesRow } from '@lib/database/TradesApi';
-import { getTradePnl } from '@lib/utils/TradeUtils';
+import { getTradePnl, getTradePnlPercent } from '@lib/utils/TradeUtils';
 
 type Props = { trades: TradesRow[] };
 
@@ -7,7 +7,7 @@ export function ModuleDashboardMetrics({ trades }: Props) {
   const executed = trades.filter((t) => t.executed);
   const skipped = trades.filter((t) => !t.executed);
 
-  const netPnl = executed.reduce((sum, t) => sum + (t.pnl ?? 0), 0);
+  const netPnl = executed.reduce((sum, t) => sum + getTradePnlPercent(t), 0);
 
   const wins = executed.filter((t) => (t.pnl ?? 0) > 0);
   const losses = executed.filter((t) => (t.pnl ?? 0) <= 0);
@@ -23,18 +23,21 @@ export function ModuleDashboardMetrics({ trades }: Props) {
 
   const avgWin =
     wins.length > 0
-      ? wins.reduce((sum, t) => sum + (t.pnl ?? 0), 0) / wins.length
+      ? wins.reduce((sum, t) => sum + getTradePnlPercent(t), 0) / wins.length
       : 0;
   const avgLoss =
     losses.length > 0
       ? Math.abs(
-          losses.reduce((sum, t) => sum + (t.pnl ?? 0), 0) / losses.length,
+          losses.reduce((sum, t) => sum + getTradePnlPercent(t), 0) /
+            losses.length,
         )
       : 0;
   const rrRatio = avgLoss > 0 ? avgWin / avgLoss : null;
 
-  const totalProfit = wins.reduce((sum, t) => sum + (t.pnl ?? 0), 0);
-  const totalLoss = Math.abs(losses.reduce((sum, t) => sum + (t.pnl ?? 0), 0));
+  const totalProfit = wins.reduce((sum, t) => sum + getTradePnlPercent(t), 0);
+  const totalLoss = Math.abs(
+    losses.reduce((sum, t) => sum + getTradePnlPercent(t), 0),
+  );
   const profitFactor = totalLoss > 0 ? totalProfit / totalLoss : null;
   const profitFactorColor =
     profitFactor === null
@@ -46,7 +49,8 @@ export function ModuleDashboardMetrics({ trades }: Props) {
           : 'var(--color-short)';
 
   const missedPnl = skipped.reduce(
-    (sum, t) => sum + getTradePnl({ ...t, exit: t.target }),
+    (sum, t) =>
+      sum + (t.account ? (getTradePnl({ ...t, exit: t.target }) / t.account) * 100 : 0),
     0,
   );
 
@@ -56,7 +60,7 @@ export function ModuleDashboardMetrics({ trades }: Props) {
         label="Profit factor"
         value={profitFactor !== null ? profitFactor.toFixed(2) : '—'}
         valueColor={profitFactorColor}
-        sub={`$${totalProfit.toFixed(2)} / $${totalLoss.toFixed(2)}`}
+        sub={`${totalProfit.toFixed(2)}% / ${totalLoss.toFixed(2)}%`}
       />
       <MetricCard
         label="Win rate"
@@ -69,7 +73,7 @@ export function ModuleDashboardMetrics({ trades }: Props) {
         valueColor={
           rrRatio !== null && rrRatio >= 1 ? 'var(--color-long)' : undefined
         }
-        sub={`$${avgWin.toFixed(2)} / $${avgLoss.toFixed(2)}`}
+        sub={`${avgWin.toFixed(2)}% / ${avgLoss.toFixed(2)}%`}
       />
       <MetricCard
         label="Avg risk"
@@ -78,13 +82,13 @@ export function ModuleDashboardMetrics({ trades }: Props) {
       />
       <MetricCard
         label="Net P&L"
-        value={`${netPnl >= 0 ? '+' : ''}$${netPnl.toFixed(2)}`}
+        value={`${netPnl >= 0 ? '+' : ''}${netPnl.toFixed(2)}%`}
         valueColor={netPnl >= 0 ? 'var(--color-long)' : 'var(--color-short)'}
         sub="executed trades"
       />
       <MetricCard
         label="Missed P&L"
-        value={`${missedPnl >= 0 ? '+' : ''}$${missedPnl.toFixed(2)}`}
+        value={`${missedPnl >= 0 ? '+' : ''}${missedPnl.toFixed(2)}%`}
         valueColor="orange"
         sub="skipped setups"
       />
