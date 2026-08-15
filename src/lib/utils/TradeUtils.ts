@@ -1,5 +1,6 @@
 import type { TradesSpotRow } from '@lib/database/SpotApi';
 import type { TradesRow } from '@lib/database/TradesApi';
+import { formatDateTime } from '@lib/utils/DateUtils';
 import { round } from '@lib/utils/MathUtils';
 
 // export function getTradesPnl(trades: TradesRow[]) {
@@ -121,7 +122,7 @@ export function exportTradesToCsv(trades: TradesRow[], monthKey: string) {
   };
 
   const rows = trades.map((t) => [
-    new Date(t.created_at).toLocaleString(),
+    formatDateTime(t.created_at),
     t.symbol,
     t.time_frame,
     t.long_short,

@@ -1,6 +1,7 @@
 import { useSpotContext } from '@lib/context/SpotContext';
 import type { TradesSpotRow } from '@lib/database/SpotApi';
 import type { TradesUpdate } from '@lib/database/TradesApi';
+import { formatDate } from '@lib/utils/DateUtils';
 import { toEUR } from '@lib/utils/MathUtils';
 import { getSpotPnl } from '@lib/utils/TradeUtils';
 import { useState, type CSSProperties, type ReactNode } from 'react';
@@ -193,7 +194,7 @@ const columns: {
           />
         );
       }
-      return date.toLocaleDateString();
+      return formatDate(date);
     },
   },
   {

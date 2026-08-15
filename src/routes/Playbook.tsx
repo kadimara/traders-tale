@@ -1,5 +1,6 @@
 import type { TradesRow } from '@lib/database/TradesApi';
 import { tradesSelectPlaybook } from '@lib/database/TradesApi';
+import { formatDate } from '@lib/utils/DateUtils';
 import { useAsync } from '@lib/hooks/useAsync';
 import { Link } from '@tanstack/react-router';
 
@@ -48,7 +49,7 @@ function PlaybookCard({ trade }: { trade: TradesRow }) {
       </div>
 
       <span className="text-muted" style={{ fontSize: '1.2rem' }}>
-        #{trade.id} · {new Date(trade.created_at).toLocaleDateString()}
+        #{trade.id} · {formatDate(trade.created_at)}
       </span>
 
       <p

@@ -3,6 +3,7 @@ import { Star } from 'react-feather';
 import { Link, useParams } from '@tanstack/react-router';
 import { tradesSelectById, type TradesRow } from '@lib/database/TradesApi';
 import { useTradesContext } from '@lib/context/TradesContext';
+import { formatDate } from '@lib/utils/DateUtils';
 import { toUSD } from '@lib/utils/MathUtils';
 import { TradeDocument } from '@lib/components/TradeDocument';
 
@@ -55,7 +56,7 @@ export default function Trade() {
             <span className={trade.long_short}>{trade.long_short}</span>
           </h1>
           <span className="text-muted">
-            #{trade.id} · {new Date(trade.created_at).toLocaleDateString()}
+            #{trade.id} · {formatDate(trade.created_at)}
           </span>
         </div>
         <button

@@ -5,6 +5,7 @@ import { useTradesContext } from '../context/TradesContext';
 import { useMonthContext } from '../context/MonthContext';
 import { setLocalStorageItem, useLocalStorage } from '../hooks/useLocalStorage';
 import type { TradesRow, TradesUpdate } from '@lib/database/TradesApi';
+import { formatDateTime } from '@lib/utils/DateUtils';
 import { toUSD } from '@lib/utils/MathUtils';
 import {
   exportTradesToCsv,
@@ -72,6 +73,7 @@ export function TradesTable() {
         <option value="3m"></option>
         <option value="5m"></option>
         <option value="15m"></option>
+        <option value="30m"></option>
         <option value="1h"></option>
         <option value="4h"></option>
         <option value="D"></option>
@@ -237,7 +239,7 @@ const columns: {
           />
         );
       }
-      return new Date(created_at).toLocaleString();
+      return formatDateTime(created_at);
     },
   },
   {
