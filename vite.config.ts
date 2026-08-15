@@ -1,20 +1,15 @@
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import react, { reactCompilerPreset } from '@vitejs/plugin-react';
+import babel from '@rolldown/plugin-babel';
 import path from 'path';
 
 // https://vite.dev/config/
 export default defineConfig({
   base: '/traders-tale/',
-  plugins: [
-    react({
-      babel: {
-        plugins: [['babel-plugin-react-compiler']],
-      },
-    }),
-  ],
+  plugins: [react(), babel({ presets: [reactCompilerPreset()] })],
   resolve: {
     alias: {
-      '@lib': path.resolve(__dirname, './src/lib'),
+      '@lib': path.resolve(import.meta.dirname, './src/lib'),
     },
   },
 });
