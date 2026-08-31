@@ -41,7 +41,7 @@ export default function Home() {
     (monthDate.getFullYear() === today.getFullYear() &&
       monthDate.getMonth() < today.getMonth());
 
-  const monthLabel = monthDate.toLocaleDateString(undefined, {
+  const monthLabel = monthDate.toLocaleDateString('en-US', {
     month: 'long',
     year: 'numeric',
   });
