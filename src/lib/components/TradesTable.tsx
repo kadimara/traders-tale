@@ -5,7 +5,7 @@ import { useTradesContext } from '../context/TradesContext';
 import { useMonthContext } from '../context/MonthContext';
 import { setLocalStorageItem, useLocalStorage } from '../hooks/useLocalStorage';
 import type { TradesRow, TradesUpdate } from '@lib/database/TradesApi';
-import { formatDateTime } from '@lib/utils/DateUtils';
+import { formatDateTime, toDateTimeLocalInput } from '@lib/utils/DateUtils';
 import { toUSD } from '@lib/utils/MathUtils';
 import {
   exportTradesToCsv,
@@ -228,8 +228,7 @@ const columns: {
     style: { width: 200 },
     render: ({ created_at }, editable, onChange) => {
       if (editable) {
-        // datetime-local expects "YYYY-MM-DDTHH:mm"
-        const localValue = new Date(created_at).toISOString().slice(0, 16);
+        const localValue = toDateTimeLocalInput(created_at);
         return (
           <input
             type="datetime-local"
