@@ -1,11 +1,9 @@
 import type { TradesRow } from '@lib/database/TradesApi';
-import { getTradePnl } from '@lib/utils/TradeUtils';
 
 type Props = { trades: TradesRow[] };
 
 export function ModuleDashboardMetrics({ trades }: Props) {
   const executed = trades.filter((t) => t.executed);
-  const skipped = trades.filter((t) => !t.executed);
 
   const netPnl = executed.reduce((sum, t) => sum + (t.pnl ?? 0), 0);
 
@@ -45,11 +43,6 @@ export function ModuleDashboardMetrics({ trades }: Props) {
           ? 'orange'
           : 'var(--color-short)';
 
-  const missedPnl = skipped.reduce(
-    (sum, t) => sum + getTradePnl({ ...t, exit: t.target }),
-    0,
-  );
-
   return (
     <>
       <MetricCard
@@ -81,12 +74,6 @@ export function ModuleDashboardMetrics({ trades }: Props) {
         value={`${netPnl >= 0 ? '+' : ''}$${netPnl.toFixed(2)}`}
         valueColor={netPnl >= 0 ? 'var(--color-long)' : 'var(--color-short)'}
         sub="executed trades"
-      />
-      <MetricCard
-        label="Missed P&L"
-        value={`${missedPnl >= 0 ? '+' : ''}$${missedPnl.toFixed(2)}`}
-        valueColor="orange"
-        sub="skipped setups"
       />
     </>
   );
