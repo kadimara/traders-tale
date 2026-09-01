@@ -1,4 +1,3 @@
-import type { TradesSpotRow } from '@lib/database/SpotApi';
 import type { TradesRow } from '@lib/database/TradesApi';
 import { formatDateTime } from '@lib/utils/DateUtils';
 import { round } from '@lib/utils/MathUtils';
@@ -33,13 +32,6 @@ export function getTradePnl({
   const feesPayed = (fees ?? 0) * amount; // entry and exit fees
   const pnl = round(amount - (exit / entry) * amount, 2);
   return (long_short == 'long' ? pnl * -1 : pnl) - feesPayed;
-}
-
-export function getSpotPnl({ amount, entry, exit }: TradesSpotRow): number {
-  if (!exit || !entry) {
-    return 0;
-  }
-  return round(amount * exit - amount * entry, 2);
 }
 
 export function exportTradesToCsv(trades: TradesRow[], monthKey: string) {

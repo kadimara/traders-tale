@@ -9,7 +9,6 @@ import { TradesProvider } from '@lib/context/TradesContext';
 import Layout from './routes/Layout';
 import Auth from './routes/Auth';
 import Home from './routes/Home';
-import Spot from './routes/Spot';
 import Journal from './routes/Journal';
 import Playbook from './routes/Playbook';
 import Trade from './routes/Trade';
@@ -45,12 +44,6 @@ const homeRoute = createRoute({
   component: Home,
 });
 
-const spotRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/spot',
-  component: Spot,
-});
-
 const journalRoute = createRoute({
   getParentRoute: () => layoutRoute,
   path: '/journal',
@@ -72,7 +65,7 @@ const tradeRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   authRoute,
   tradeRoute,
-  layoutRoute.addChildren([homeRoute, spotRoute, journalRoute, playbookRoute, tradeRoute]),
+  layoutRoute.addChildren([homeRoute, journalRoute, playbookRoute, tradeRoute]),
 ]);
 
 export const router = createRouter({

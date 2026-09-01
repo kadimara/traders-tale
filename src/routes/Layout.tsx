@@ -18,14 +18,6 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
           DASHBOARD
         </Link>
         <Link
-          to="/spot"
-          activeProps={{
-            style: { color: 'var(--color-text)', textDecoration: 'underline' },
-          }}
-        >
-          SPOT
-        </Link>
-        <Link
           to="/journal"
           activeProps={{
             style: { color: 'var(--color-text)', textDecoration: 'underline' },
