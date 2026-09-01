@@ -32,12 +32,11 @@ SessionProvider       → Supabase auth session, redirects to /auth if unauthent
   MonthProvider       → Active month state (monthDate, monthKey, prev/next/today handlers)
     TradesProvider    → Futures trades for the active month (CRUD, from Supabase)
       Layout
-        Home / Spot / Futures
+        Home / Futures
 ```
 
 - **`monthKey`** is the canonical month identifier: `"YYYY-MM-01"` string. It is the `month_year` column value and used as a date range filter on `created_at`.
 - **`TradesProvider`** re-fetches from Supabase whenever `monthKey` changes.
-- **`SpotContext`** follows the same pattern but is used only in `Spot.tsx`.
 
 ### Database layer (`src/lib/database/`)
 
@@ -49,7 +48,6 @@ All API functions use the singleton `supabase` client from `SupabaseClient.ts`. 
 All four vars are read from `.env.local` (see `.env.example` for the expected names). API functions throw the Supabase error directly on failure.
 
 - `TradesApi.ts` — futures trades CRUD; types re-exported from `database.types.ts`
-- `SpotApi.ts` — spot trades CRUD
 - `MonthlyPlanApi.ts` — per-month markdown plan (upsert on conflict `month_year`)
 
 TypeScript types for all tables come from the generated `src/lib/types/database.types.ts`. Re-run `npm run supa-gen-types` after any schema change.
@@ -64,7 +62,7 @@ TypeScript types for all tables come from the generated `src/lib/types/database.
 
 ### Utilities
 
-- `src/lib/utils/TradeUtils.ts` — PnL, risk, long/short calculations for both futures and spot trades; TradingView snapshot URL parsing.
+- `src/lib/utils/TradeUtils.ts` — PnL, risk, long/short calculations for futures trades; TradingView snapshot URL parsing.
 - `src/lib/utils/MathUtils.ts` — `round` helper.
 - `src/lib/utils/DateUtils.ts` — date helpers.
 - `src/lib/hooks/useAsync.ts` — wraps an async function in `{ data, loading, error, setData }` state; the context providers use this for initial data fetches.
