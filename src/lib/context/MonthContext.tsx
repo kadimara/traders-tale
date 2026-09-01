@@ -26,7 +26,7 @@ export function MonthProvider({ children }: PropsWithChildren) {
   });
 
   const monthYear = monthDate
-    .toLocaleDateString(undefined, {
+    .toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
     })

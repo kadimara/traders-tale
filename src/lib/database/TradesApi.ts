@@ -16,9 +16,9 @@ export async function tradesSelectAll() {
 }
 
 export async function tradesSelectByMonth(monthKey: string) {
-  const startDate = new Date(monthKey);
-  const endDate = new Date(startDate);
-  endDate.setMonth(endDate.getMonth() + 1);
+  const [year, month] = monthKey.split('-').map(Number);
+  const startDate = new Date(year, month - 1, 1);
+  const endDate = new Date(year, month, 1);
 
   const { data, error } = await supabase
     .from('trades')
