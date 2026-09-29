@@ -15,7 +15,10 @@ import { toUSD } from '@lib/utils/MathUtils';
 import {
   contractsToUsd,
   exportTradesToCsv,
+  formatTradeSize,
+  getAccountAfterTrade,
   getContractSize,
+  getTradeAmountForRisk,
   getTradeLongShort,
   getTradePnl,
   getTradeRisk,
@@ -30,8 +33,10 @@ export function TradesTable() {
   const { monthKey } = useMonthContext();
 
   const handleAddTrade = async () => {
+    // Trades are sorted newest first
+    const prev = trades[0];
     const trade = await insertTrade({
-      account: 0,
+      account: prev ? getAccountAfterTrade(prev) : 0,
       amount: 0,
       entry: 0,
       long_short: 'long',
@@ -112,10 +117,14 @@ function Row({ trade }: { trade: TradesRow }) {
   const handleChange = (key: keyof TradesRow, value: unknown) => {
     setTradeLocal((prev) => {
       const local = { ...prev, [key]: value };
-      // Keep the contract count when the entry changes after contracts were entered
       const contractSize = getContractSize(local.symbol ?? trade.symbol);
       const prevEntry = prev?.entry ?? trade.entry;
-      if (key === 'entry' && prev?.amount && contractSize && prevEntry) {
+      // Size the position from the fixed risk while no amount is set
+      if (key !== 'amount' && !(prev?.amount ?? trade.amount)) {
+        const amount = getTradeAmountForRisk({ ...trade, ...local });
+        if (amount !== undefined) local.amount = amount;
+      } else if (key === 'entry' && prev?.amount && contractSize && prevEntry) {
+        // Keep the contract count when the entry changes after contracts were entered
         const contracts = usdToContracts(prev.amount, contractSize, prevEntry);
         local.amount = contractsToUsd(contracts, contractSize, value as number);
       }
@@ -138,7 +147,8 @@ function Row({ trade }: { trade: TradesRow }) {
         style={{
           background: showDetails ? 'var(--color-bg-highlight)' : undefined,
           borderBottomColor: showDetails ? 'transparent' : undefined,
-          color: trade.status !== 'taken' && !editing ? 'gray' : undefined,
+          color: trade.status === 'missed' && !editing ? 'gray' : undefined,
+          boxShadow: trade.status === 'planned' ? 'inset 3px 0 0 var(--color-main)' : undefined,
         }}
       >
         {columns.map((col) => {
@@ -226,6 +236,28 @@ const columns: {
   ) => ReactNode;
 }[] = [
   {
+    label: 'STATUS',
+    key: 'status',
+    style: { width: 100, textAlign: 'center' },
+    render: (row, editable, onChange) =>
+      editable ? (
+        <select
+          name="status"
+          style={{ textAlign: 'center' }}
+          value={row.status}
+          onChange={(e) => onChange(e.target.value as TradeStatus)}
+        >
+          {TRADE_STATUSES.map((status) => (
+            <option key={status} value={status}>
+              {status}
+            </option>
+          ))}
+        </select>
+      ) : (
+        row.status
+      ),
+  },
+  {
     label: 'DATE',
     key: 'created_at',
     style: { width: 200 },
@@ -282,34 +314,38 @@ const columns: {
     },
   },
   {
-    label: 'AMOUNT',
+    label: 'SIZE',
     key: 'amount',
     style: { minWidth: 100, textAlign: 'right' },
     render(row, editable, onChange) {
       const contractSize = getContractSize(row.symbol);
-      if (!editable || !contractSize) {
-        return editable ? (
-          <InputNumber name="amount" value={row.amount} onChange={onChange} />
-        ) : (
-          toUSD(row.amount)
+      if (!editable) return formatTradeSize(row);
+      if (!contractSize) {
+        return (
+          <div className="flex gap-1" style={{ alignItems: 'center' }}>
+            <span>$</span>
+            <InputNumber
+              name="amount"
+              placeholder="dollars"
+              value={row.amount || null}
+              onChange={onChange}
+            />
+          </div>
         );
       }
       return (
-        <div className="flex gap-1" style={{ alignItems: 'center' }}>
-          <InputNumber
-            name="contracts"
-            title={`Contracts (1 = ${contractSize} ${row.symbol.toUpperCase()})`}
-            placeholder={row.entry ? 'contracts' : 'set entry'}
-            disabled={!row.entry}
-            min="0"
-            step="1"
-            value={row.entry ? usdToContracts(row.amount, contractSize, row.entry) : null}
-            onChange={(contracts) =>
-              onChange(contractsToUsd(contracts, contractSize, row.entry))
-            }
-          />
-          <span style={{ whiteSpace: 'nowrap' }}>ct ≈ {toUSD(row.amount)}</span>
-        </div>
+        <InputNumber
+          name="contracts"
+          title={`Contracts (1 = ${contractSize} ${row.symbol.toUpperCase()})`}
+          placeholder="contracts"
+          disabled={!row.entry}
+          min="0"
+          step="1"
+          value={
+            row.entry && row.amount ? usdToContracts(row.amount, contractSize, row.entry) : null
+          }
+          onChange={(contracts) => onChange(contractsToUsd(contracts, contractSize, row.entry))}
+        />
       );
     },
   },
@@ -382,26 +418,5 @@ const columns: {
         {toUSD(row.pnl)}
       </span>
     ),
-  },
-  {
-    label: 'STATUS',
-    key: 'status',
-    style: { width: 100, textAlign: 'right' },
-    render: (row, editable, onChange) =>
-      editable ? (
-        <select
-          name="status"
-          value={row.status}
-          onChange={(e) => onChange(e.target.value as TradeStatus)}
-        >
-          {TRADE_STATUSES.map((status) => (
-            <option key={status} value={status}>
-              {status}
-            </option>
-          ))}
-        </select>
-      ) : (
-        row.status
-      ),
   },
 ];

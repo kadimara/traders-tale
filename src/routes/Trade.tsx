@@ -6,6 +6,7 @@ import { useTradesContext } from '@lib/context/TradesContext';
 import { formatDate } from '@lib/utils/DateUtils';
 import { toUSD } from '@lib/utils/MathUtils';
 import { TradeDocument } from '@lib/components/TradeDocument';
+import { formatTradeSize } from '@lib/utils/TradeUtils';
 
 export default function Trade() {
   const { id } = useParams({ from: '/layout/trade/$id' });
@@ -82,7 +83,7 @@ export default function Trade() {
         <thead className="text-muted" style={{ fontSize: '0.82rem' }}>
           <tr>
             <th>ACCOUNT</th>
-            <th>AMOUNT</th>
+            <th>SIZE</th>
             <th>SL</th>
             <th>ENTRY</th>
             <th>EXIT</th>
@@ -95,7 +96,7 @@ export default function Trade() {
         <tbody>
           <tr style={{ pointerEvents: 'none' }}>
             <th>{toUSD(trade.account)}</th>
-            <th>{toUSD(trade.amount)}</th>
+            <th>{formatTradeSize(trade)}</th>
             <th>{toUSD(trade.stop)}</th>
             <th>{toUSD(trade.entry)}</th>
             <th>{toUSD(trade.exit) ?? '—'}</th>

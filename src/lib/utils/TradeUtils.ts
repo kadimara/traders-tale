@@ -1,6 +1,6 @@
 import type { TradesRow } from '@lib/database/TradesApi';
 import { formatDateTime } from '@lib/utils/DateUtils';
-import { round } from '@lib/utils/MathUtils';
+import { round, toUSD } from '@lib/utils/MathUtils';
 
 // Coin per contract for OKX USDT-margined perpetual swaps (ctVal).
 const CONTRACT_SIZES: Record<string, number> = {
@@ -19,6 +19,34 @@ export function contractsToUsd(contracts: number, contractSize: number, entry: n
 
 export function usdToContracts(amount: number, contractSize: number, entry: number) {
   return entry ? Math.round(amount / (contractSize * entry)) : 0;
+}
+
+// Account balance after a trade: only taken trades have realized their PnL
+export function getAccountAfterTrade(trade: TradesRow) {
+  return round(trade.account + (trade.status === 'taken' ? (trade.pnl ?? 0) : 0), 2);
+}
+
+export const DEFAULT_RISK = 0.018;
+
+// Position size (USD) that risks DEFAULT_RISK of the account between entry and stop,
+// rounded down to whole contracts when the symbol has a contract size.
+export function getTradeAmountForRisk(
+  trade: Pick<TradesRow, 'symbol' | 'account' | 'stop' | 'entry'>
+): number | undefined {
+  const { account, stop, entry } = trade;
+  if (!account || !stop || !entry || stop === entry) return undefined;
+  const amount = (DEFAULT_RISK * account) / Math.abs(stop / entry - 1);
+  const contractSize = getContractSize(trade.symbol);
+  if (!contractSize) return Math.floor(amount * 100) / 100;
+  return contractsToUsd(Math.floor(amount / (contractSize * entry)), contractSize, entry);
+}
+
+export function formatTradeSize(trade: Pick<TradesRow, 'symbol' | 'amount' | 'entry'>) {
+  const contractSize = getContractSize(trade.symbol);
+  if (!contractSize) return toUSD(trade.amount);
+  if (!trade.entry) return '—';
+  const contracts = usdToContracts(trade.amount, contractSize, trade.entry);
+  return `${contracts} ${contracts === 1 ? 'contract' : 'contracts'}`;
 }
 
 export function getTradeRisk(trade: TradesRow): number {
@@ -48,8 +76,8 @@ export function getTradePnl({
     return 0;
   }
 
-  const pnl = round(amount - (exit / entry) * amount, 2);
-  return (long_short == 'long' ? pnl * -1 : pnl) - (fees ?? 0); // entry and exit fees
+  const pnl = amount - (exit / entry) * amount;
+  return round((long_short == 'long' ? pnl * -1 : pnl) - (fees ?? 0), 2); // entry and exit fees
 }
 
 export function exportTradesToCsv(trades: TradesRow[], monthKey: string) {
