@@ -332,7 +332,7 @@ const columns: {
           onChange={onChange}
         />
       ) : (
-        toUSD(row.fees)
+        toUSD(row.fees ? -row.fees : row.fees)
       );
     },
   },
