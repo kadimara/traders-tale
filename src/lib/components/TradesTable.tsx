@@ -147,7 +147,8 @@ function Row({ trade }: { trade: TradesRow }) {
         style={{
           background: showDetails ? 'var(--color-bg-highlight)' : undefined,
           borderBottomColor: showDetails ? 'transparent' : undefined,
-          color: trade.status !== 'taken' && !editing ? 'gray' : undefined,
+          color: trade.status === 'missed' && !editing ? 'gray' : undefined,
+          boxShadow: trade.status === 'planned' ? 'inset 3px 0 0 var(--color-main)' : undefined,
         }}
       >
         {columns.map((col) => {
