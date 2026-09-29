@@ -4,7 +4,7 @@ import { round } from '@lib/utils/MathUtils';
 
 // Coin per contract for OKX USDT-margined perpetual swaps (ctVal).
 const CONTRACT_SIZES: Record<string, number> = {
-  BTC: 0.01,
+  BTC: 0.0001,
   ETH: 0.1,
   SOL: 1,
 };
