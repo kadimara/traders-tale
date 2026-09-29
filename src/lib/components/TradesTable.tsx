@@ -236,6 +236,28 @@ const columns: {
   ) => ReactNode;
 }[] = [
   {
+    label: 'STATUS',
+    key: 'status',
+    style: { width: 100, textAlign: 'center' },
+    render: (row, editable, onChange) =>
+      editable ? (
+        <select
+          name="status"
+          style={{ textAlign: 'center' }}
+          value={row.status}
+          onChange={(e) => onChange(e.target.value as TradeStatus)}
+        >
+          {TRADE_STATUSES.map((status) => (
+            <option key={status} value={status}>
+              {status}
+            </option>
+          ))}
+        </select>
+      ) : (
+        row.status
+      ),
+  },
+  {
     label: 'DATE',
     key: 'created_at',
     style: { width: 200 },
@@ -396,26 +418,5 @@ const columns: {
         {toUSD(row.pnl)}
       </span>
     ),
-  },
-  {
-    label: 'STATUS',
-    key: 'status',
-    style: { width: 100, textAlign: 'right' },
-    render: (row, editable, onChange) =>
-      editable ? (
-        <select
-          name="status"
-          value={row.status}
-          onChange={(e) => onChange(e.target.value as TradeStatus)}
-        >
-          {TRADE_STATUSES.map((status) => (
-            <option key={status} value={status}>
-              {status}
-            </option>
-          ))}
-        </select>
-      ) : (
-        row.status
-      ),
   },
 ];
