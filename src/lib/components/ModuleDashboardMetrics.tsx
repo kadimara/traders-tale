@@ -3,16 +3,16 @@ import type { TradesRow } from '@lib/database/TradesApi';
 type Props = { trades: TradesRow[] };
 
 export function ModuleDashboardMetrics({ trades }: Props) {
-  const executed = trades.filter((t) => t.executed);
+  const taken = trades.filter((t) => t.status === 'taken');
 
-  const netPnl = executed.reduce((sum, t) => sum + (t.pnl ?? 0), 0);
+  const netPnl = taken.reduce((sum, t) => sum + (t.pnl ?? 0), 0);
 
-  const wins = executed.filter((t) => (t.pnl ?? 0) > 0);
-  const losses = executed.filter((t) => (t.pnl ?? 0) <= 0);
+  const wins = taken.filter((t) => (t.pnl ?? 0) > 0);
+  const losses = taken.filter((t) => (t.pnl ?? 0) <= 0);
   const winRate =
-    executed.length > 0 ? Math.round((wins.length / executed.length) * 100) : 0;
+    taken.length > 0 ? Math.round((wins.length / taken.length) * 100) : 0;
 
-  const riskyTrades = executed.filter((t) => t.risk != null);
+  const riskyTrades = taken.filter((t) => t.risk != null);
   const avgRisk =
     riskyTrades.length > 0
       ? riskyTrades.reduce((sum, t) => sum + (t.risk ?? 0), 0) /
@@ -73,7 +73,7 @@ export function ModuleDashboardMetrics({ trades }: Props) {
         label="Net P&L"
         value={`${netPnl >= 0 ? '+' : ''}$${netPnl.toFixed(2)}`}
         valueColor={netPnl >= 0 ? 'var(--color-long)' : 'var(--color-short)'}
-        sub="executed trades"
+        sub="taken trades"
       />
     </>
   );

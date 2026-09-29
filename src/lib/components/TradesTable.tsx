@@ -4,7 +4,12 @@ import { Link } from '@tanstack/react-router';
 import { useTradesContext } from '../context/TradesContext';
 import { useMonthContext } from '../context/MonthContext';
 import { setLocalStorageItem, useLocalStorage } from '../hooks/useLocalStorage';
-import type { TradesRow, TradesUpdate } from '@lib/database/TradesApi';
+import {
+  TRADE_STATUSES,
+  type TradeStatus,
+  type TradesRow,
+  type TradesUpdate,
+} from '@lib/database/TradesApi';
 import { formatDateTime, toDateTimeLocalInput } from '@lib/utils/DateUtils';
 import { toUSD } from '@lib/utils/MathUtils';
 import {
@@ -28,9 +33,8 @@ export function TradesTable() {
       entry: 0,
       long_short: 'long',
       stop: 0,
+      status: 'planned',
       symbol: 'BTC',
-      target: 0,
-      time_frame: '4h',
     });
     setLocalStorageItem(`trade${trade.id}`, {});
   };
@@ -67,17 +71,6 @@ export function TradesTable() {
         <option value="SOL"></option>
         <option value="ADA"></option>
         <option value="BNB"></option>
-      </datalist>
-      <datalist id="data-list-time_frames">
-        <option value="1m"></option>
-        <option value="3m"></option>
-        <option value="5m"></option>
-        <option value="15m"></option>
-        <option value="30m"></option>
-        <option value="1h"></option>
-        <option value="4h"></option>
-        <option value="D"></option>
-        <option value="W"></option>
       </datalist>
     </>
   );
@@ -135,7 +128,7 @@ function Row({ trade }: { trade: TradesRow }) {
         style={{
           background: showDetails ? 'var(--color-bg-highlight)' : undefined,
           borderBottomColor: showDetails ? 'transparent' : undefined,
-          color: !trade.executed && !editing ? 'gray' : undefined,
+          color: trade.status !== 'taken' && !editing ? 'gray' : undefined,
         }}
       >
         {columns.map((col) => {
@@ -258,23 +251,6 @@ const columns: {
       ),
   },
   {
-    label: 'TF',
-    key: 'time_frame',
-    style: { width: 64 },
-    render: (row, editable, onChange) => {
-      return editable ? (
-        <Input
-          name="time_frame"
-          placeholder={row.time_frame}
-          list="data-list-time_frames"
-          onChange={onChange}
-        />
-      ) : (
-        row.time_frame
-      );
-    },
-  },
-  {
     label: 'L / S',
     key: 'long_short',
     style: { width: 64 },
@@ -332,18 +308,6 @@ const columns: {
     },
   },
   {
-    label: 'TARGET',
-    key: 'target',
-    style: { minWidth: 100, textAlign: 'right' },
-    render(row, editable, onChange) {
-      return editable ? (
-        <InputNumber name="target" value={row.target} onChange={onChange} />
-      ) : (
-        toUSD(row.target)
-      );
-    },
-  },
-  {
     label: 'EXIT',
     key: 'exit',
     style: { minWidth: 100, textAlign: 'right' },
@@ -358,20 +322,17 @@ const columns: {
   {
     label: 'FEES',
     key: 'fees',
-    style: { width: 100, textAlign: 'right' },
-    render: (row, editable, onChange) => {
-      const percentage = row.fees ? (row.fees * 100).toFixed(2) + '%' : '';
+    style: { minWidth: 100, textAlign: 'right' },
+    render(row, editable, onChange) {
       return editable ? (
         <InputNumber
           name="fees"
           min="0"
-          max="0.1"
-          step="0.01"
-          value={(row.fees || 0) * 100}
-          onChange={(value) => onChange(value / 100)}
+          value={row.fees ?? 0}
+          onChange={onChange}
         />
       ) : (
-        percentage
+        toUSD(row.fees)
       );
     },
   },
@@ -387,25 +348,30 @@ const columns: {
     style: { width: 64, textAlign: 'right' },
     render: (row) => (
       // -1 = red, 0 = currentColor, 1 = green
-      <span className={row.executed ? 'number' + Math.sign(row.pnl || 0) : ''}>
+      <span className={row.status === 'taken' ? 'number' + Math.sign(row.pnl || 0) : ''}>
         {toUSD(row.pnl)}
       </span>
     ),
   },
   {
-    label: 'EXEC',
-    key: 'executed',
-    style: { width: 64, textAlign: 'right' },
-    render: (row, editable, onChange) => {
-      return (
-        <input
-          type="checkbox"
-          name="executed"
-          checked={row.executed}
-          disabled={!editable}
-          onChange={(e) => onChange(e.target.checked)}
-        />
-      );
-    },
+    label: 'STATUS',
+    key: 'status',
+    style: { width: 100, textAlign: 'right' },
+    render: (row, editable, onChange) =>
+      editable ? (
+        <select
+          name="status"
+          value={row.status}
+          onChange={(e) => onChange(e.target.value as TradeStatus)}
+        >
+          {TRADE_STATUSES.map((status) => (
+            <option key={status} value={status}>
+              {status}
+            </option>
+          ))}
+        </select>
+      ) : (
+        row.status
+      ),
   },
 ];

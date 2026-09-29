@@ -36,10 +36,7 @@ function PlaybookCard({ trade }: { trade: TradesRow }) {
     >
       <div className="flex align-items-center justify-between gap-2">
         <h3 style={{ margin: 0, fontSize: '2rem' }}>
-          {trade.symbol}{' '}
-          <span className="text-muted" style={{ fontWeight: 300 }}>
-            · {trade.time_frame}
-          </span>
+          {trade.symbol}
         </h3>
         <span
           className={`direction-badge ${trade.long_short} background-${trade.long_short}`}

@@ -83,10 +83,9 @@ export type Database = {
           playbook: boolean
           pnl: number | null
           risk: number | null
+          status: Database["public"]["Enums"]["trade_status"]
           stop: number
           symbol: string
-          target: number
-          time_frame: string
           user_id: string
         }
         Insert: {
@@ -103,10 +102,9 @@ export type Database = {
           playbook?: boolean
           pnl?: number | null
           risk?: number | null
+          status?: Database["public"]["Enums"]["trade_status"]
           stop: number
           symbol: string
-          target: number
-          time_frame: string
           user_id?: string
         }
         Update: {
@@ -123,10 +121,9 @@ export type Database = {
           playbook?: boolean
           pnl?: number | null
           risk?: number | null
+          status?: Database["public"]["Enums"]["trade_status"]
           stop?: number
           symbol?: string
-          target?: number
-          time_frame?: string
           user_id?: string
         }
         Relationships: []
@@ -139,7 +136,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      trade_status: "planned" | "taken" | "missed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -266,6 +263,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      trade_status: ["planned", "taken", "missed"],
+    },
   },
 } as const

@@ -1,9 +1,12 @@
-import type { Database } from '@lib/types/database.types';
+import { Constants, type Database } from '@lib/types/database.types';
 import { supabase } from './SupabaseClient';
 
 export type TradesRow = Database['public']['Tables']['trades']['Row'];
 export type TradesInsert = Database['public']['Tables']['trades']['Insert'];
 export type TradesUpdate = Database['public']['Tables']['trades']['Update'];
+export type TradeStatus = Database['public']['Enums']['trade_status'];
+
+export const TRADE_STATUSES = Constants.public.Enums.trade_status;
 
 export async function tradesSelectAll() {
   const { data, error } = await supabase

@@ -52,7 +52,7 @@ export default function Trade() {
       <div className="flex align-items-center gap-2">
         <div className="flex-col gap-2 flex-1">
           <h1>
-            {trade.symbol} · {trade.time_frame} ·{' '}
+            {trade.symbol} ·{' '}
             <span className={trade.long_short}>{trade.long_short}</span>
           </h1>
           <span className="text-muted">
@@ -85,12 +85,11 @@ export default function Trade() {
             <th>AMOUNT</th>
             <th>SL</th>
             <th>ENTRY</th>
-            <th>TARGET</th>
             <th>EXIT</th>
             <th>FEES</th>
             <th>RISK</th>
             <th>PNL</th>
-            <th>EXEC</th>
+            <th>STATUS</th>
           </tr>
         </thead>
         <tbody>
@@ -99,26 +98,21 @@ export default function Trade() {
             <th>{toUSD(trade.amount)}</th>
             <th>{toUSD(trade.stop)}</th>
             <th>{toUSD(trade.entry)}</th>
-            <th>{toUSD(trade.target)}</th>
             <th>{toUSD(trade.exit) ?? '—'}</th>
-            <th>
-              {trade.fees != null ? (trade.fees * 100).toFixed(2) + '%' : '—'}
-            </th>
+            <th>{toUSD(trade.fees) ?? '—'}</th>
             <th>
               {trade.risk != null ? (trade.risk * 100).toFixed(2) + '%' : '—'}
             </th>
             <th>
               <span
                 className={
-                  trade.executed ? 'number' + Math.sign(trade.pnl ?? 0) : ''
+                  trade.status === 'taken' ? 'number' + Math.sign(trade.pnl ?? 0) : ''
                 }
               >
                 {toUSD(trade.pnl) ?? '—'}
               </span>
             </th>
-            <th>
-              <input type="checkbox" checked={trade.executed} readOnly />
-            </th>
+            <th>{trade.status}</th>
           </tr>
         </tbody>
       </table>
