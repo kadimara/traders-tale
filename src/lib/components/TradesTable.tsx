@@ -298,7 +298,12 @@ const columns: {
         return (
           <div className="flex gap-1" style={{ alignItems: 'center' }}>
             <span>$</span>
-            <InputNumber name="amount" value={row.amount} onChange={onChange} />
+            <InputNumber
+              name="amount"
+              placeholder="dollars"
+              value={row.amount || null}
+              onChange={onChange}
+            />
           </div>
         );
       }
@@ -310,7 +315,9 @@ const columns: {
           disabled={!row.entry}
           min="0"
           step="1"
-          value={row.entry ? usdToContracts(row.amount, contractSize, row.entry) : null}
+          value={
+            row.entry && row.amount ? usdToContracts(row.amount, contractSize, row.entry) : null
+          }
           onChange={(contracts) => onChange(contractsToUsd(contracts, contractSize, row.entry))}
         />
       );
