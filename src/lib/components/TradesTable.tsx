@@ -13,10 +13,13 @@ import {
 import { formatDateTime, toDateTimeLocalInput } from '@lib/utils/DateUtils';
 import { toUSD } from '@lib/utils/MathUtils';
 import {
+  contractsToUsd,
   exportTradesToCsv,
+  getContractSize,
   getTradeLongShort,
   getTradePnl,
   getTradeRisk,
+  usdToContracts,
 } from '@lib/utils/TradeUtils';
 import { Input } from './Input';
 import { InputNumber } from './InputNumber';
@@ -109,6 +112,13 @@ function Row({ trade }: { trade: TradesRow }) {
   const handleChange = (key: keyof TradesRow, value: unknown) => {
     setTradeLocal((prev) => {
       const local = { ...prev, [key]: value };
+      // Keep the contract count when the entry changes after contracts were entered
+      const contractSize = getContractSize(local.symbol ?? trade.symbol);
+      const prevEntry = prev?.entry ?? trade.entry;
+      if (key === 'entry' && prev?.amount && contractSize && prevEntry) {
+        const contracts = usdToContracts(prev.amount, contractSize, prevEntry);
+        local.amount = contractsToUsd(contracts, contractSize, value as number);
+      }
       const combined = { ...trade, ...local };
       const long_short = getTradeLongShort({ ...combined });
       const risk = getTradeRisk({ ...combined, long_short });
@@ -276,10 +286,30 @@ const columns: {
     key: 'amount',
     style: { minWidth: 100, textAlign: 'right' },
     render(row, editable, onChange) {
-      return editable ? (
-        <InputNumber name="amount" value={row.amount} onChange={onChange} />
-      ) : (
-        toUSD(row.amount)
+      const contractSize = getContractSize(row.symbol);
+      if (!editable || !contractSize) {
+        return editable ? (
+          <InputNumber name="amount" value={row.amount} onChange={onChange} />
+        ) : (
+          toUSD(row.amount)
+        );
+      }
+      return (
+        <div className="flex gap-1" style={{ alignItems: 'center' }}>
+          <InputNumber
+            name="contracts"
+            title={`Contracts (1 = ${contractSize} ${row.symbol.toUpperCase()})`}
+            placeholder={row.entry ? 'contracts' : 'set entry'}
+            disabled={!row.entry}
+            min="0"
+            step="1"
+            value={row.entry ? usdToContracts(row.amount, contractSize, row.entry) : null}
+            onChange={(contracts) =>
+              onChange(contractsToUsd(contracts, contractSize, row.entry))
+            }
+          />
+          <span style={{ whiteSpace: 'nowrap' }}>ct ≈ {toUSD(row.amount)}</span>
+        </div>
       );
     },
   },
@@ -332,7 +362,7 @@ const columns: {
           onChange={onChange}
         />
       ) : (
-        toUSD(row.fees)
+        toUSD(row.fees ? -row.fees : row.fees)
       );
     },
   },

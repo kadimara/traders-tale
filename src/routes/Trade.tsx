@@ -99,7 +99,7 @@ export default function Trade() {
             <th>{toUSD(trade.stop)}</th>
             <th>{toUSD(trade.entry)}</th>
             <th>{toUSD(trade.exit) ?? '—'}</th>
-            <th>{toUSD(trade.fees) ?? '—'}</th>
+            <th>{toUSD(trade.fees ? -trade.fees : trade.fees) ?? '—'}</th>
             <th>
               {trade.risk != null ? (trade.risk * 100).toFixed(2) + '%' : '—'}
             </th>
