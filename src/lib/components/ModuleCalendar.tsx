@@ -110,7 +110,7 @@ const calculateDailyStats = (date: Date, trades: TradesRow[]) => {
     return isSameLocalDay(t, date);
   });
   const totalPnl = dailyTrades.reduce(
-    (acc, trade) => acc + (trade.executed ? trade.pnl || 0 : 0),
+    (acc, trade) => acc + (trade.status === 'taken' ? trade.pnl || 0 : 0),
     0,
   );
   return { totalTrades: dailyTrades.length, totalPnl };

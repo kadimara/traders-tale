@@ -29,15 +29,14 @@ export function getTradePnl({
     return 0;
   }
 
-  const feesPayed = (fees ?? 0) * amount; // entry and exit fees
   const pnl = round(amount - (exit / entry) * amount, 2);
-  return (long_short == 'long' ? pnl * -1 : pnl) - feesPayed;
+  return (long_short == 'long' ? pnl * -1 : pnl) - (fees ?? 0); // entry and exit fees
 }
 
 export function exportTradesToCsv(trades: TradesRow[], monthKey: string) {
   const headers = [
-    'date', 'symbol', 'TF', 'L/S', 'account', 'amount',
-    'SL', 'entry', 'target', 'exit', 'fees', 'risk', 'PnL', 'executed', 'journal',
+    'date', 'symbol', 'L/S', 'account', 'amount',
+    'SL', 'entry', 'exit', 'fees', 'risk', 'PnL', 'status', 'journal',
   ];
 
   const escape = (val: unknown) => {
@@ -51,18 +50,16 @@ export function exportTradesToCsv(trades: TradesRow[], monthKey: string) {
   const rows = trades.map((t) => [
     formatDateTime(t.created_at),
     t.symbol,
-    t.time_frame,
     t.long_short,
     t.account,
     t.amount,
     t.stop,
     t.entry,
-    t.target,
     t.exit ?? '',
-    t.fees != null ? (t.fees * 100).toFixed(2) + '%' : '',
+    t.fees ?? '',
     t.risk != null ? (t.risk * 100).toFixed(2) + '%' : '',
     t.pnl ?? '',
-    t.executed ? 'yes' : 'no',
+    t.status,
     t.journal ?? '',
   ].map(escape).join(','));
 
