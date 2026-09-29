@@ -6,6 +6,7 @@ import { useMonthContext } from '../context/MonthContext';
 import { setLocalStorageItem, useLocalStorage } from '../hooks/useLocalStorage';
 import {
   TRADE_STATUSES,
+  tradesSelectLatest,
   type TradeStatus,
   type TradesRow,
   type TradesUpdate,
@@ -16,6 +17,7 @@ import {
   contractsToUsd,
   exportTradesToCsv,
   formatTradeSize,
+  getAccountAfterTrade,
   getContractSize,
   getTradeAmountForRisk,
   getTradeLongShort,
@@ -32,8 +34,9 @@ export function TradesTable() {
   const { monthKey } = useMonthContext();
 
   const handleAddTrade = async () => {
+    const latest = await tradesSelectLatest();
     const trade = await insertTrade({
-      account: 0,
+      account: latest ? getAccountAfterTrade(latest) : 0,
       amount: 0,
       entry: 0,
       long_short: 'long',

@@ -18,6 +18,20 @@ export async function tradesSelectAll() {
   return data;
 }
 
+// Most recent trade with an account set, across all months
+export async function tradesSelectLatest() {
+  const { data, error } = await supabase
+    .from('trades')
+    .select('*')
+    .gt('account', 0)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+}
+
 export async function tradesSelectByMonth(monthKey: string) {
   const [year, month] = monthKey.split('-').map(Number);
   const startDate = new Date(year, month - 1, 1);
