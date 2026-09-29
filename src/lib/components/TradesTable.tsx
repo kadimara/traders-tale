@@ -302,6 +302,7 @@ const columns: {
             placeholder={row.entry ? 'contracts' : 'set entry'}
             disabled={!row.entry}
             min="0"
+            step="1"
             value={row.entry ? usdToContracts(row.amount, contractSize, row.entry) : null}
             onChange={(contracts) =>
               onChange(contractsToUsd(contracts, contractSize, row.entry))

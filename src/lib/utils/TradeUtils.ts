@@ -14,11 +14,11 @@ export function getContractSize(symbol: string): number | undefined {
 }
 
 export function contractsToUsd(contracts: number, contractSize: number, entry: number) {
-  return round(contracts * contractSize * entry, 2);
+  return round(Math.round(contracts) * contractSize * entry, 2);
 }
 
 export function usdToContracts(amount: number, contractSize: number, entry: number) {
-  return entry ? round(amount / (contractSize * entry), 4) : 0;
+  return entry ? Math.round(amount / (contractSize * entry)) : 0;
 }
 
 export function getTradeRisk(trade: TradesRow): number {
