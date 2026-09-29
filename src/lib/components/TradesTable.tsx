@@ -17,6 +17,7 @@ import {
   exportTradesToCsv,
   formatTradeSize,
   getContractSize,
+  getTradeAmountForRisk,
   getTradeLongShort,
   getTradePnl,
   getTradeRisk,
@@ -86,6 +87,7 @@ function Row({ trade }: { trade: TradesRow }) {
     useLocalStorage<Partial<TradesRow> | null>(`trade${trade.id}`, null);
   const tradeCombined = { ...trade, ...tradeLocal };
 
+  const [amountEdited, setAmountEdited] = useState(false);
   const [d, setShowDetails] = useState(false);
   const toggleDetails = () => setShowDetails((v) => !v);
   const editing = tradeLocal !== null;
@@ -105,18 +107,26 @@ function Row({ trade }: { trade: TradesRow }) {
       } as TradesUpdate);
     }
     setTradeLocal(null);
+    setAmountEdited(false);
   };
   const handleCancel = () => {
     setTradeLocal(null);
+    setAmountEdited(false);
   };
 
   const handleChange = (key: keyof TradesRow, value: unknown) => {
+    // Size the position from the fixed risk until an amount is saved or entered by hand
+    const autoAmount = !trade.amount && !amountEdited && key !== 'amount';
+    if (key === 'amount') setAmountEdited(true);
     setTradeLocal((prev) => {
       const local = { ...prev, [key]: value };
       // Keep the contract count when the entry changes after contracts were entered
       const contractSize = getContractSize(local.symbol ?? trade.symbol);
       const prevEntry = prev?.entry ?? trade.entry;
-      if (key === 'entry' && prev?.amount && contractSize && prevEntry) {
+      if (autoAmount) {
+        const amount = getTradeAmountForRisk({ ...trade, ...local });
+        if (amount !== undefined) local.amount = amount;
+      } else if (key === 'entry' && prev?.amount && contractSize && prevEntry) {
         const contracts = usdToContracts(prev.amount, contractSize, prevEntry);
         local.amount = contractsToUsd(contracts, contractSize, value as number);
       }

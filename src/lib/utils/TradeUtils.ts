@@ -21,6 +21,21 @@ export function usdToContracts(amount: number, contractSize: number, entry: numb
   return entry ? Math.round(amount / (contractSize * entry)) : 0;
 }
 
+export const DEFAULT_RISK = 0.018;
+
+// Position size (USD) that risks DEFAULT_RISK of the account between entry and stop,
+// rounded down to whole contracts when the symbol has a contract size.
+export function getTradeAmountForRisk(
+  trade: Pick<TradesRow, 'symbol' | 'account' | 'stop' | 'entry'>
+): number | undefined {
+  const { account, stop, entry } = trade;
+  if (!account || !stop || !entry || stop === entry) return undefined;
+  const amount = (DEFAULT_RISK * account) / Math.abs(stop / entry - 1);
+  const contractSize = getContractSize(trade.symbol);
+  if (!contractSize) return Math.floor(amount * 100) / 100;
+  return contractsToUsd(Math.floor(amount / (contractSize * entry)), contractSize, entry);
+}
+
 export function formatTradeSize(trade: Pick<TradesRow, 'symbol' | 'amount' | 'entry'>) {
   const contractSize = getContractSize(trade.symbol);
   if (!contractSize) return toUSD(trade.amount);
