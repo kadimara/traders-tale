@@ -6,7 +6,6 @@ import { useMonthContext } from '../context/MonthContext';
 import { setLocalStorageItem, useLocalStorage } from '../hooks/useLocalStorage';
 import {
   TRADE_STATUSES,
-  tradesSelectLatest,
   type TradeStatus,
   type TradesRow,
   type TradesUpdate,
@@ -34,9 +33,10 @@ export function TradesTable() {
   const { monthKey } = useMonthContext();
 
   const handleAddTrade = async () => {
-    const latest = await tradesSelectLatest();
+    // Trades are sorted newest first
+    const prev = trades[0];
     const trade = await insertTrade({
-      account: latest ? getAccountAfterTrade(latest) : 0,
+      account: prev ? getAccountAfterTrade(prev) : 0,
       amount: 0,
       entry: 0,
       long_short: 'long',
