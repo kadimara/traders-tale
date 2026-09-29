@@ -287,9 +287,19 @@ const columns: {
     style: { minWidth: 100, textAlign: 'right' },
     render(row, editable, onChange) {
       const contractSize = getContractSize(row.symbol);
-      if (!editable || !contractSize) {
+      if (!contractSize) {
         return editable ? (
           <InputNumber name="amount" value={row.amount} onChange={onChange} />
+        ) : (
+          toUSD(row.amount)
+        );
+      }
+      if (!editable) {
+        return row.entry ? (
+          <span style={{ whiteSpace: 'nowrap' }}>
+            {usdToContracts(row.amount, contractSize, row.entry)} ct ≈{' '}
+            {toUSD(row.amount)}
+          </span>
         ) : (
           toUSD(row.amount)
         );
