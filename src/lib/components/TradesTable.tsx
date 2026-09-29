@@ -15,6 +15,7 @@ import { toUSD } from '@lib/utils/MathUtils';
 import {
   contractsToUsd,
   exportTradesToCsv,
+  formatTradeSize,
   getContractSize,
   getTradeLongShort,
   getTradePnl,
@@ -282,20 +283,19 @@ const columns: {
     },
   },
   {
-    label: 'CONTRACTS',
+    label: 'SIZE',
     key: 'amount',
     style: { minWidth: 100, textAlign: 'right' },
     render(row, editable, onChange) {
       const contractSize = getContractSize(row.symbol);
+      if (!editable) return formatTradeSize(row);
       if (!contractSize) {
-        return editable ? (
-          <InputNumber name="amount" value={row.amount} onChange={onChange} />
-        ) : (
-          toUSD(row.amount)
+        return (
+          <div className="flex gap-1" style={{ alignItems: 'center' }}>
+            <span>$</span>
+            <InputNumber name="amount" value={row.amount} onChange={onChange} />
+          </div>
         );
-      }
-      if (!editable) {
-        return row.entry ? usdToContracts(row.amount, contractSize, row.entry) : '—';
       }
       return (
         <InputNumber

@@ -6,7 +6,7 @@ import { useTradesContext } from '@lib/context/TradesContext';
 import { formatDate } from '@lib/utils/DateUtils';
 import { toUSD } from '@lib/utils/MathUtils';
 import { TradeDocument } from '@lib/components/TradeDocument';
-import { getContractSize, usdToContracts } from '@lib/utils/TradeUtils';
+import { formatTradeSize } from '@lib/utils/TradeUtils';
 
 export default function Trade() {
   const { id } = useParams({ from: '/layout/trade/$id' });
@@ -83,7 +83,7 @@ export default function Trade() {
         <thead className="text-muted" style={{ fontSize: '0.82rem' }}>
           <tr>
             <th>ACCOUNT</th>
-            <th>CONTRACTS</th>
+            <th>SIZE</th>
             <th>SL</th>
             <th>ENTRY</th>
             <th>EXIT</th>
@@ -96,7 +96,7 @@ export default function Trade() {
         <tbody>
           <tr style={{ pointerEvents: 'none' }}>
             <th>{toUSD(trade.account)}</th>
-            <th>{formatContracts(trade)}</th>
+            <th>{formatTradeSize(trade)}</th>
             <th>{toUSD(trade.stop)}</th>
             <th>{toUSD(trade.entry)}</th>
             <th>{toUSD(trade.exit) ?? '—'}</th>
@@ -120,10 +120,4 @@ export default function Trade() {
       <TradeDocument trade={trade} onSave={handleSave} />
     </main>
   );
-}
-
-function formatContracts(trade: TradesRow) {
-  const contractSize = getContractSize(trade.symbol);
-  if (!contractSize) return toUSD(trade.amount);
-  return trade.entry ? usdToContracts(trade.amount, contractSize, trade.entry) : '—';
 }

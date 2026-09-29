@@ -1,6 +1,6 @@
 import type { TradesRow } from '@lib/database/TradesApi';
 import { formatDateTime } from '@lib/utils/DateUtils';
-import { round } from '@lib/utils/MathUtils';
+import { round, toUSD } from '@lib/utils/MathUtils';
 
 // Coin per contract for OKX USDT-margined perpetual swaps (ctVal).
 const CONTRACT_SIZES: Record<string, number> = {
@@ -19,6 +19,14 @@ export function contractsToUsd(contracts: number, contractSize: number, entry: n
 
 export function usdToContracts(amount: number, contractSize: number, entry: number) {
   return entry ? Math.round(amount / (contractSize * entry)) : 0;
+}
+
+export function formatTradeSize(trade: Pick<TradesRow, 'symbol' | 'amount' | 'entry'>) {
+  const contractSize = getContractSize(trade.symbol);
+  if (!contractSize) return toUSD(trade.amount);
+  if (!trade.entry) return '—';
+  const contracts = usdToContracts(trade.amount, contractSize, trade.entry);
+  return `${contracts} ${contracts === 1 ? 'contract' : 'contracts'}`;
 }
 
 export function getTradeRisk(trade: TradesRow): number {
