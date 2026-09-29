@@ -2,6 +2,25 @@ import type { TradesRow } from '@lib/database/TradesApi';
 import { formatDateTime } from '@lib/utils/DateUtils';
 import { round } from '@lib/utils/MathUtils';
 
+// Coin per contract for OKX USDT-margined perpetual swaps (ctVal).
+const CONTRACT_SIZES: Record<string, number> = {
+  BTC: 0.01,
+  ETH: 0.1,
+  SOL: 1,
+};
+
+export function getContractSize(symbol: string): number | undefined {
+  return CONTRACT_SIZES[symbol.trim().toUpperCase()];
+}
+
+export function contractsToUsd(contracts: number, contractSize: number, entry: number) {
+  return round(contracts * contractSize * entry, 2);
+}
+
+export function usdToContracts(amount: number, contractSize: number, entry: number) {
+  return entry ? round(amount / (contractSize * entry), 4) : 0;
+}
+
 export function getTradeRisk(trade: TradesRow): number {
   if (!trade.stop || !trade.entry) {
     return 0;
