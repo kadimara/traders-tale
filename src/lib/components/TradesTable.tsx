@@ -282,34 +282,32 @@ const columns: {
     },
   },
   {
-    label: 'AMOUNT',
+    label: 'CONTRACTS',
     key: 'amount',
     style: { minWidth: 100, textAlign: 'right' },
     render(row, editable, onChange) {
       const contractSize = getContractSize(row.symbol);
-      if (!editable || !contractSize) {
+      if (!contractSize) {
         return editable ? (
           <InputNumber name="amount" value={row.amount} onChange={onChange} />
         ) : (
           toUSD(row.amount)
         );
       }
+      if (!editable) {
+        return row.entry ? usdToContracts(row.amount, contractSize, row.entry) : '—';
+      }
       return (
-        <div className="flex gap-1" style={{ alignItems: 'center' }}>
-          <InputNumber
-            name="contracts"
-            title={`Contracts (1 = ${contractSize} ${row.symbol.toUpperCase()})`}
-            placeholder={row.entry ? 'contracts' : 'set entry'}
-            disabled={!row.entry}
-            min="0"
-            step="1"
-            value={row.entry ? usdToContracts(row.amount, contractSize, row.entry) : null}
-            onChange={(contracts) =>
-              onChange(contractsToUsd(contracts, contractSize, row.entry))
-            }
-          />
-          <span style={{ whiteSpace: 'nowrap' }}>ct ≈ {toUSD(row.amount)}</span>
-        </div>
+        <InputNumber
+          name="contracts"
+          title={`Contracts (1 = ${contractSize} ${row.symbol.toUpperCase()})`}
+          placeholder="contracts"
+          disabled={!row.entry}
+          min="0"
+          step="1"
+          value={row.entry ? usdToContracts(row.amount, contractSize, row.entry) : null}
+          onChange={(contracts) => onChange(contractsToUsd(contracts, contractSize, row.entry))}
+        />
       );
     },
   },
