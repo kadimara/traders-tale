@@ -71,8 +71,8 @@ export function getTradePnl({
     return 0;
   }
 
-  const pnl = round(amount - (exit / entry) * amount, 2);
-  return (long_short == 'long' ? pnl * -1 : pnl) - (fees ?? 0); // entry and exit fees
+  const pnl = amount - (exit / entry) * amount;
+  return round((long_short == 'long' ? pnl * -1 : pnl) - (fees ?? 0), 2); // entry and exit fees
 }
 
 export function exportTradesToCsv(trades: TradesRow[], monthKey: string) {

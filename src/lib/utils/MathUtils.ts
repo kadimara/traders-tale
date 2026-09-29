@@ -7,7 +7,7 @@ export function toUSD(value: number | null | undefined) {
     value?.toLocaleString('en-US', {
       style: 'currency',
       currency: 'USD',
-      maximumFractionDigits: 8,
+      maximumFractionDigits: 2,
       minimumFractionDigits: 0,
     }) || ''
   );
