@@ -74,7 +74,6 @@ export type Database = {
           amount: number
           created_at: string
           entry: number
-          executed: boolean
           exit: number | null
           fees: number | null
           id: number
@@ -93,7 +92,6 @@ export type Database = {
           amount: number
           created_at?: string
           entry: number
-          executed?: boolean
           exit?: number | null
           fees?: number | null
           id?: number
@@ -112,7 +110,6 @@ export type Database = {
           amount?: number
           created_at?: string
           entry?: number
-          executed?: boolean
           exit?: number | null
           fees?: number | null
           id?: number
