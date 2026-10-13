@@ -13,11 +13,11 @@ Daily structure. Up = +1, down = −1. DXY is reversed.
 - DXY: [up / down] → [−1 / +1]
 - BTC: [up / down] → [+1 / −1]
 
-Bias score: [ ] → +2 or more = long · −2 or less = short · 0 = no with-trend trade
+Bias score: [score] → +2 or more = long · −2 or less = short · 0 = no with-trend trade
 
 ## Intraday Fundamentals
 
-- ETF flow yesterday: [inflow / outflow] [$__M] ([farside](https://farside.co.uk/btc/))
+- ETF flow yesterday: [inflow / outflow] [$M] ([farside](https://farside.co.uk/btc/))
 - Events today: [none / event, date, time]
 - High-impact (CPI, PPI, FOMC, NFP, PCE): no entries 1h before to 30min after
 
@@ -27,14 +27,14 @@ Bias score: [ ] → +2 or more = long · −2 or less = short · 0 = no with-tre
 - Weekly structure: [up / down / reversing]
 - Daily structure: internal [up / down], external [up / down]
 - 2-week SMA: sloping [up / down / flat]
-- AVWAP from [...]: acting as [support / resistance]
+- AVWAP from [anchor]: acting as [support / resistance]
 
 ## Setup
 
 - Direction: [long / short] · Type: [with / against] · Timeframe: [1h / 2h / 4h]
 - Entry: body [open / close] at hourly level [price]
 - Stop: 0.1% beyond the wick [price]
-- Target: [price] · R:R [__] (minimum 2R)
+- Target: [price] · R:R [R:R] (minimum 2R)
 
 ## Management
 
@@ -59,8 +59,8 @@ Grade: [A/B/C/D]
 
 ## Review
 
-- Result: [__R]
+- Result: [±R]
 - Price 12h after exit: [continued / reversed]
-- Followed the plan? [Y / N] → if N, which rule and why: [ ]
+- Followed the plan? [Y / N] → if N, which rule and why: [rule, why]
 - Execution grade: [A = all rules · B = minor slip · C = major slip · D = off-plan]
 `;
