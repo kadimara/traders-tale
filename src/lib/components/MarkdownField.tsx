@@ -112,6 +112,32 @@ export function MarkdownField({
     }
   };
 
+  // Clicking inside a `[...]` placeholder selects it, brackets included, so
+  // typing replaces it. Skips links (`[text](url)`) and task checkboxes.
+  const handleClick = (e: React.MouseEvent<HTMLTextAreaElement>) => {
+    const el = e.currentTarget;
+    if (e.detail !== 1 || el.selectionStart !== el.selectionEnd) return;
+    const text = el.value;
+    const pos = el.selectionStart;
+
+    let start = pos - 1;
+    while (start >= 0 && !'[]\n'.includes(text[start])) start--;
+    if (text[start] !== '[') return;
+    let end = pos;
+    while (end < text.length && !'[]\n'.includes(text[end])) end++;
+    if (text[end] !== ']') return;
+
+    if (text[end + 1] === '(') return;
+    const lineStart = text.lastIndexOf('\n', start) + 1;
+    const beforeBracket = text.slice(lineStart, start);
+    const isTaskBox =
+      /^\s*([-*+]|\d+[.)])\s+$/.test(beforeBracket) &&
+      /^[ xX]$/.test(text.slice(start + 1, end));
+    if (isTaskBox) return;
+
+    el.setSelectionRange(start, end + 1);
+  };
+
   const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
     const pasted = e.clipboardData.getData('text');
     if (!/^https?:\/\/\S+$/.test(pasted.trim())) return;
@@ -141,6 +167,7 @@ export function MarkdownField({
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         onPaste={handlePaste}
+        onClick={handleClick}
         style={{
           width: '100%',
           fontFamily: 'inherit',
