@@ -8,10 +8,10 @@ Structure rule: HH/HL = up, LH/LL = down. A swing needs 2 candles on each side. 
 
 Daily structure. Up = +1, down = −1. DXY is reversed.
 
-- SPX: [up / down] → [+1 / −1]
-- Gold: [up / down] → [+1 / −1]
-- DXY: [up / down] → [−1 / +1]
-- BTC: [up / down] → [+1 / −1]
+- SPX: [up → +1 / down → −1]
+- Gold: [up → +1 / down → −1]
+- DXY: [up → −1 / down → +1]
+- BTC: [up → +1 / down → −1]
 
 Bias score: [score] → +2 or more = long · −2 or less = short · 0 = no with-trend trade
 
