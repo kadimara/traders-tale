@@ -127,6 +127,9 @@ export function getImageSrcFromTradingViewUrl(url: string) {
     /(?<=https:\/\/www.tradingview.com\/x\/)(.*)(?=\/)/g,
   );
   const result = results?.[0];
-  const char = result?.[0]?.toLowerCase();
+  if (!result) {
+    return '';
+  }
+  const char = result[0].toLowerCase();
   return `https://s3.tradingview.com/snapshots/${char}/${result}.png`;
 }

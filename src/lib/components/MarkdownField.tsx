@@ -22,23 +22,28 @@ const markdownComponents: React.ComponentProps<
   },
   a: ({ href, children }) => {
     const imgSrc = href ? getImageSrcFromTradingViewUrl(href) : '';
+    if (!imgSrc) {
+      return (
+        <a href={href} target="_blank" rel="noreferrer">
+          {children}
+        </a>
+      );
+    }
     return (
       <span className="flex flex-col gap-1">
         <a href={href} target="_blank" rel="noreferrer">
           {children}
         </a>
-        {imgSrc && (
-          <img
-            src={imgSrc}
-            alt="TradingView chart"
-            style={{
-              display: 'block',
-              maxHeight: 300,
-              objectFit: 'contain',
-              alignSelf: 'flex-start',
-            }}
-          />
-        )}
+        <img
+          src={imgSrc}
+          alt="TradingView chart"
+          style={{
+            display: 'block',
+            maxHeight: 300,
+            objectFit: 'contain',
+            alignSelf: 'flex-start',
+          }}
+        />
       </span>
     );
   },
