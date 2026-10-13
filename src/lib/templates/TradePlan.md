@@ -1,6 +1,4 @@
-// Default journal for new trades. `[a / b]` placeholders can be filled from the
-// editor: Tab jumps between them, Up/Down cycles their options.
-export const TRADE_PLAN_TEMPLATE = `# BTC Trading Plan
+# BTC Trading Plan
 
 Structure rule: HH/HL = up, LH/LL = down. A swing needs 2 candles on each side. Hourly = the 1h, 2h or 4h. Pick one per trade and use it for entry, trailing and invalidation.
 
@@ -63,4 +61,3 @@ Grade: [A/B/C/D]
 - Price 12h after exit: [continued / reversed]
 - Followed the plan? [Y / N] → if N, which rule and why: [rule, why]
 - Execution grade: [A = all rules · B = minor slip · C = major slip · D = off-plan]
-`;
