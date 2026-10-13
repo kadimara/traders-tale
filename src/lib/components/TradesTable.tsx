@@ -24,6 +24,7 @@ import {
   getTradeRisk,
   usdToContracts,
 } from '@lib/utils/TradeUtils';
+import { TRADE_PLAN_TEMPLATE } from '@lib/utils/TradePlanTemplate';
 import { Input } from './Input';
 import { InputNumber } from './InputNumber';
 import { TradeDocument } from './TradeDocument';
@@ -39,6 +40,7 @@ export function TradesTable() {
       account: prev ? getAccountAfterTrade(prev) : 0,
       amount: 0,
       entry: 0,
+      journal: TRADE_PLAN_TEMPLATE,
       long_short: 'long',
       stop: 0,
       status: 'planned',
