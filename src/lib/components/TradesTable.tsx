@@ -24,6 +24,8 @@ import {
   getTradeRisk,
   usdToContracts,
 } from '@lib/utils/TradeUtils';
+// Default journal for new trades. Edit the .md file to change it.
+import tradePlanTemplate from '@lib/templates/TradePlan.md?raw';
 import { Input } from './Input';
 import { InputNumber } from './InputNumber';
 import { TradeDocument } from './TradeDocument';
@@ -39,6 +41,7 @@ export function TradesTable() {
       account: prev ? getAccountAfterTrade(prev) : 0,
       amount: 0,
       entry: 0,
+      journal: tradePlanTemplate,
       long_short: 'long',
       stop: 0,
       status: 'planned',

@@ -44,6 +44,44 @@ const markdownComponents: React.ComponentProps<
   },
 };
 
+type Placeholder = { start: number; end: number };
+
+// `[...]` placeholders in the text, e.g. `[up / down]` or `[price]`. Links
+// (`[text](url)`) and task checkboxes (`- [ ]`) are not placeholders.
+function findPlaceholders(text: string): Placeholder[] {
+  const found: Placeholder[] = [];
+  for (const match of text.matchAll(/\[[^[\]\n]*\]/g)) {
+    const start = match.index;
+    const end = start + match[0].length;
+    if (text[end] === '(') continue;
+    const lineStart = text.lastIndexOf('\n', start) + 1;
+    const isTaskBox =
+      /^\s*([-*+]|\d+[.)])\s+$/.test(text.slice(lineStart, start)) &&
+      /^\[[ xX]\]$/.test(match[0]);
+    if (isTaskBox) continue;
+    found.push({ start, end });
+  }
+  return found;
+}
+
+// The placeholder currently being filled with the arrow keys.
+type ActiveChoice = {
+  start: number;
+  end: number;
+  original: string;
+  options: string[];
+  index: number; // options.length means the original placeholder
+};
+
+function toActiveChoice(text: string, { start, end }: Placeholder): ActiveChoice {
+  const original = text.slice(start, end);
+  const inner = original.slice(1, -1);
+  const options = inner.includes('/')
+    ? inner.split('/').map((option) => option.trim())
+    : [];
+  return { start, end, original, options, index: options.length };
+}
+
 type MarkdownFieldProps = {
   value?: string | null;
   onChange?: (value: string) => void;
@@ -58,7 +96,8 @@ export function MarkdownField({
   placeholder,
 }: MarkdownFieldProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const pendingCursorRef = useRef<number | null>(null);
+  const pendingSelectionRef = useRef<Placeholder | null>(null);
+  const activeChoiceRef = useRef<ActiveChoice | null>(null);
   const historyRef = useRef<{ value: string; cursor: number }[]>([
     { value: value || '', cursor: 0 },
   ]);
@@ -71,11 +110,10 @@ export function MarkdownField({
     el.style.height = 'auto';
     el.style.height = `${el.scrollHeight}px`;
     window.scrollTo(0, scrollY);
-    if (pendingCursorRef.current !== null) {
-      const pos = pendingCursorRef.current;
-      pendingCursorRef.current = null;
-      el.selectionStart = pos;
-      el.selectionEnd = pos;
+    if (pendingSelectionRef.current !== null) {
+      const { start, end } = pendingSelectionRef.current;
+      pendingSelectionRef.current = null;
+      el.setSelectionRange(start, end);
     }
   }, [value, editing]);
 
@@ -86,19 +124,69 @@ export function MarkdownField({
     historyIndexRef.current = trimmed.length - 1;
   };
 
+  const selectPlaceholder = (el: HTMLTextAreaElement, placeholder: Placeholder) => {
+    activeChoiceRef.current = toActiveChoice(el.value, placeholder);
+    el.setSelectionRange(placeholder.start, placeholder.end);
+  };
+
+  // Up/Down cycles the selected placeholder through its options and back.
+  const cycleChoice = (el: HTMLTextAreaElement, step: number) => {
+    const choice = activeChoiceRef.current;
+    if (
+      !choice ||
+      choice.options.length === 0 ||
+      el.selectionStart !== choice.start ||
+      el.selectionEnd !== choice.end
+    ) {
+      return false;
+    }
+    const count = choice.options.length + 1;
+    const index = (choice.index + step + count) % count;
+    const replacement =
+      index === choice.options.length ? choice.original : choice.options[index];
+    const current = el.value;
+    const next =
+      current.slice(0, choice.start) + replacement + current.slice(choice.end);
+    const end = choice.start + replacement.length;
+    activeChoiceRef.current = { ...choice, index, end };
+    pushHistory(next, end);
+    pendingSelectionRef.current = { start: choice.start, end };
+    onChange?.(next);
+    return true;
+  };
+
+  // Tab / Shift+Tab jumps to the next / previous placeholder, wrapping around.
+  const jumpToPlaceholder = (el: HTMLTextAreaElement, backwards: boolean) => {
+    const placeholders = findPlaceholders(el.value);
+    if (placeholders.length === 0) return false;
+    const target = backwards
+      ? (placeholders.filter((p) => p.end <= el.selectionStart).pop() ??
+        placeholders[placeholders.length - 1])
+      : (placeholders.find((p) => p.start >= el.selectionEnd) ??
+        placeholders[0]);
+    selectPlaceholder(el, target);
+    return true;
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    activeChoiceRef.current = null;
     pushHistory(e.target.value, e.target.selectionStart);
     onChange?.(e.target.value);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     const ctrl = e.ctrlKey || e.metaKey;
-    if (ctrl && e.key === 'z' && !e.shiftKey) {
+    const el = e.currentTarget;
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      if (cycleChoice(el, e.key === 'ArrowDown' ? 1 : -1)) e.preventDefault();
+    } else if (e.key === 'Tab' && !ctrl && !e.altKey) {
+      if (jumpToPlaceholder(el, e.shiftKey)) e.preventDefault();
+    } else if (ctrl && e.key === 'z' && !e.shiftKey) {
       e.preventDefault();
       if (historyIndexRef.current > 0) {
         historyIndexRef.current--;
         const { value: prev, cursor } = historyRef.current[historyIndexRef.current];
-        pendingCursorRef.current = cursor;
+        pendingSelectionRef.current = { start: cursor, end: cursor };
         onChange?.(prev);
       }
     } else if (ctrl && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
@@ -106,10 +194,23 @@ export function MarkdownField({
       if (historyIndexRef.current < historyRef.current.length - 1) {
         historyIndexRef.current++;
         const { value: next, cursor } = historyRef.current[historyIndexRef.current];
-        pendingCursorRef.current = cursor;
+        pendingSelectionRef.current = { start: cursor, end: cursor };
         onChange?.(next);
       }
     }
+  };
+
+  // Clicking inside a `[...]` placeholder selects it, brackets included, so
+  // typing replaces it and Up/Down cycles its options.
+  const handleClick = (e: React.MouseEvent<HTMLTextAreaElement>) => {
+    const el = e.currentTarget;
+    activeChoiceRef.current = null;
+    if (e.detail !== 1 || el.selectionStart !== el.selectionEnd) return;
+    const pos = el.selectionStart;
+    const placeholder = findPlaceholders(el.value).find(
+      (p) => p.start < pos && pos < p.end,
+    );
+    if (placeholder) selectPlaceholder(el, placeholder);
   };
 
   const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
@@ -128,7 +229,7 @@ export function MarkdownField({
     const next = current.slice(0, start) + label + current.slice(end);
     const cursor = start + label.length;
     pushHistory(next, cursor);
-    pendingCursorRef.current = cursor;
+    pendingSelectionRef.current = { start: cursor, end: cursor };
     onChange?.(next);
   };
 
@@ -141,6 +242,7 @@ export function MarkdownField({
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         onPaste={handlePaste}
+        onClick={handleClick}
         style={{
           width: '100%',
           fontFamily: 'inherit',
