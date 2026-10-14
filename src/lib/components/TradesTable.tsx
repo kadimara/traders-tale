@@ -1,9 +1,10 @@
 import { useState, type CSSProperties, type ReactNode } from 'react';
-import { Circle, Download, Edit, ExternalLink, Info, Plus, Save, X } from 'react-feather';
+import { Circle, Download, DownloadCloud, Edit, ExternalLink, Info, Plus, Save, X } from 'react-feather';
 import { Link } from '@tanstack/react-router';
 import { useTradesContext } from '../context/TradesContext';
 import { useMonthContext } from '../context/MonthContext';
 import { setLocalStorageItem, useLocalStorage } from '../hooks/useLocalStorage';
+import { useOkxSync } from '../hooks/useOkxSync';
 import {
   TRADE_STATUSES,
   type TradeStatus,
@@ -33,6 +34,7 @@ import { TradeDocument } from './TradeDocument';
 export function TradesTable() {
   const { trades, insertTrade } = useTradesContext();
   const { monthKey } = useMonthContext();
+  const { sync, syncing } = useOkxSync();
 
   const handleAddTrade = async () => {
     // Trades are sorted newest first
@@ -62,6 +64,14 @@ export function TradesTable() {
               <div className="flex gap-1" style={{ justifyContent: 'center' }}>
                 <button aria-label="Export CSV" title="Export CSV" onClick={() => exportTradesToCsv(trades, monthKey)}>
                   <Download />
+                </button>
+                <button
+                  aria-label="Sync OKX"
+                  title="Sync closed OKX positions into trades"
+                  onClick={sync}
+                  disabled={syncing}
+                >
+                  <DownloadCloud />
                 </button>
                 <button aria-label="Add" title="Add" onClick={handleAddTrade}>
                   <Plus />
@@ -122,8 +132,9 @@ function Row({ trade }: { trade: TradesRow }) {
       const local = { ...prev, [key]: value };
       const contractSize = getContractSize(local.symbol ?? trade.symbol);
       const prevEntry = prev?.entry ?? trade.entry;
-      // Size the position from the fixed risk while no amount is set
-      if (key !== 'amount' && !(prev?.amount ?? trade.amount)) {
+      const planned = (local.status ?? trade.status) === 'planned';
+      // Planned trades always size from the fixed risk; others only while no amount is set
+      if (key !== 'amount' && (planned || !(prev?.amount ?? trade.amount))) {
         const amount = getTradeAmountForRisk({ ...trade, ...local });
         if (amount !== undefined) local.amount = amount;
       } else if (key === 'entry' && prev?.amount && contractSize && prevEntry) {

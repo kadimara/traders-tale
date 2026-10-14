@@ -18,6 +18,7 @@ type TradesContextType = {
   insertTrade: (trade: TradesInsert) => Promise<TradesRow>;
   updateTrade: (id: string, trade: TradesUpdate) => Promise<void>;
   deleteTrade: (id: string) => Promise<void>;
+  reloadTrades: () => Promise<void>;
 };
 
 const TradesContext = createContext<TradesContextType | undefined>(undefined);
@@ -40,6 +41,10 @@ export function TradesProvider({ children }: PropsWithChildren) {
         prev?.map((t) => (t.id === updatedTrade.id ? updatedTrade : t)) || null
     );
   }
+  // Refetch after changes made outside this context, e.g. an OKX sync.
+  async function reloadTrades() {
+    setData(await tradesSelectByMonth(monthKey));
+  }
   async function deleteTrade(id: string) {
     await tradesDelete(id);
     setData((prev) => prev?.filter((trade) => trade.id !== id) || null);
@@ -54,6 +59,7 @@ export function TradesProvider({ children }: PropsWithChildren) {
         insertTrade,
         updateTrade,
         deleteTrade,
+        reloadTrades,
       }}
     >
       {children}
