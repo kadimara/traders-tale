@@ -32,7 +32,7 @@ function PlaybookCard({ trade }: { trade: TradesRow }) {
     <Link
       className="playbook-card"
       to="/trade/$id"
-      params={{ id: String(trade.id) }}
+      params={{ id: trade.id }}
     >
       <div className="flex align-items-center justify-between gap-2">
         <h3 style={{ margin: 0, fontSize: '2rem' }}>

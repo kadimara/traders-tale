@@ -16,8 +16,9 @@ type TradesContextType = {
   loading: boolean;
   error: Error | null;
   insertTrade: (trade: TradesInsert) => Promise<TradesRow>;
-  updateTrade: (id: number, trade: TradesUpdate) => Promise<void>;
-  deleteTrade: (id: number) => Promise<void>;
+  updateTrade: (id: string, trade: TradesUpdate) => Promise<void>;
+  deleteTrade: (id: string) => Promise<void>;
+  reloadTrades: () => Promise<void>;
 };
 
 const TradesContext = createContext<TradesContextType | undefined>(undefined);
@@ -33,14 +34,18 @@ export function TradesProvider({ children }: PropsWithChildren) {
     setData((prev) => [insertedTrade, ...(prev || [])]);
     return insertedTrade;
   }
-  async function updateTrade(id: number, trade: TradesUpdate) {
+  async function updateTrade(id: string, trade: TradesUpdate) {
     const updatedTrade = await tradesUpdate(id, trade);
     setData(
       (prev) =>
         prev?.map((t) => (t.id === updatedTrade.id ? updatedTrade : t)) || null
     );
   }
-  async function deleteTrade(id: number) {
+  // Refetch after changes made outside this context, e.g. an OKX sync.
+  async function reloadTrades() {
+    setData(await tradesSelectByMonth(monthKey));
+  }
+  async function deleteTrade(id: string) {
     await tradesDelete(id);
     setData((prev) => prev?.filter((trade) => trade.id !== id) || null);
   }
@@ -54,6 +59,7 @@ export function TradesProvider({ children }: PropsWithChildren) {
         insertTrade,
         updateTrade,
         deleteTrade,
+        reloadTrades,
       }}
     >
       {children}

@@ -1,10 +1,10 @@
-import { supabase } from '@lib/database/SupabaseClient';
+import { pb } from '@lib/database/PocketBaseClient';
 import { Book, LogOut } from 'react-feather';
 import { Link } from '@tanstack/react-router';
 import { useSessionContext } from '../lib/context/SessionContext';
 
 export default function Layout({ children }: { children?: React.ReactNode }) {
-  const { session } = useSessionContext();
+  const { user } = useSessionContext();
   return (
     <>
       <header className="flex gap-1 align-items-center">
@@ -36,10 +36,10 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
         {/* <a>PROFILE</a> */}
         <span className="flex-1" />
         <span className="text-muted">
-          {session?.user.user_metadata['display_name'] || session?.user.email}
+          {user?.name || user?.email}
         </span>
         <button
-          onClick={() => supabase.auth.signOut()}
+          onClick={() => pb.authStore.clear()}
           title="logout"
           aria-label="logout"
         >

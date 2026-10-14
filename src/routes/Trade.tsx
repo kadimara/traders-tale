@@ -16,7 +16,7 @@ export default function Trade() {
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    tradesSelectById(Number(id))
+    tradesSelectById(id)
       .then(setTrade)
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));

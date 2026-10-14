@@ -13,26 +13,22 @@ import { useState, useEffect } from 'react';
 
 export default function Home() {
   const { trades } = useTradesContext();
-  const { session } = useSessionContext();
+  const { user } = useSessionContext();
   const { monthDate, monthKey } = useMonthContext();
 
   const [planContent, setPlanContent] = useState('');
 
   useEffect(() => {
-    if (!session?.user?.id) return;
-    monthlyPlanSelectByMonth(monthKey, session.user.id)
+    if (!user) return;
+    monthlyPlanSelectByMonth(monthKey)
       .then((plan) => setPlanContent(plan?.content ?? ''))
       .catch((err) => console.error('Failed to fetch plan:', err));
-  }, [monthKey, session?.user?.id]);
+  }, [monthKey, user]);
 
   const handlePlanChange = (content: string) => {
-    if (!session?.user?.id) return;
+    if (!user) return;
     setPlanContent(content);
-    monthlyPlanUpsert({
-      user_id: session.user.id,
-      month_year: monthKey,
-      content,
-    }).catch((err) => console.error('Failed to save plan:', err));
+    monthlyPlanUpsert(monthKey, content).catch((err) => console.error('Failed to save plan:', err));
   };
 
   const today = new Date();
