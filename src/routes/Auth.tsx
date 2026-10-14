@@ -1,12 +1,24 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useSessionContext } from '../lib/context/SessionContext';
-import { supabase } from '@lib/database/SupabaseClient';
+import { ClientResponseError } from 'pocketbase';
+import { pb } from '@lib/database/PocketBaseClient';
 
-type Mode = 'signin' | 'signup' | 'confirm';
+type Mode = 'signin' | 'signup';
+
+function errorMessage(err: unknown) {
+  if (err instanceof ClientResponseError) {
+    // Prefer field-level messages, e.g. "email: Value must be unique."
+    const fields = Object.entries(err.response?.data ?? {}).map(
+      ([field, detail]) => `${field}: ${(detail as { message: string }).message}`,
+    );
+    return fields.length ? fields.join(' ') : err.message;
+  }
+  return String(err);
+}
 
 export default function Auth() {
-  const { session } = useSessionContext();
+  const { user } = useSessionContext();
   const navigate = useNavigate();
   const [mode, setMode] = useState<Mode>('signin');
   const [email, setEmail] = useState('');
@@ -16,8 +28,8 @@ export default function Auth() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (session) navigate({ to: '/' });
-  }, [session, navigate]);
+    if (user) navigate({ to: '/' });
+  }, [user, navigate]);
 
   function switchMode(next: Mode) {
     setMode(next);
@@ -29,11 +41,11 @@ export default function Auth() {
   async function handleSignIn() {
     setError(null);
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    if (error) setError(error.message);
+    try {
+      await pb.collection('users').authWithPassword(email, password);
+    } catch (err) {
+      setError(errorMessage(err));
+    }
     setLoading(false);
   }
 
@@ -44,9 +56,16 @@ export default function Auth() {
     }
     setError(null);
     setLoading(true);
-    const { error } = await supabase.auth.signUp({ email, password });
-    if (error) setError(error.message);
-    else setMode('confirm');
+    try {
+      await pb.collection('users').create({
+        email,
+        password,
+        passwordConfirm: confirmPassword,
+      });
+      await pb.collection('users').authWithPassword(email, password);
+    } catch (err) {
+      setError(errorMessage(err));
+    }
     setLoading(false);
   }
 
@@ -57,28 +76,6 @@ export default function Auth() {
     padding: 24,
     minWidth: 280,
   };
-
-  if (mode === 'confirm') {
-    return (
-      <main
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: '100vh',
-        }}
-      >
-        <div className="flex flex-col gap-1" style={cardStyle}>
-          <p style={{ margin: 0, fontWeight: 600 }}>Check your email</p>
-          <p style={{ margin: 0, fontSize: '0.875rem', opacity: 0.7 }}>
-            A confirmation link has been sent to <strong>{email}</strong>. Click
-            it to activate your account, then sign in.
-          </p>
-          <button onClick={() => switchMode('signin')}>Back to Sign In</button>
-        </div>
-      </main>
-    );
-  }
 
   return (
     <main

@@ -1,51 +1,64 @@
-import type { Database } from '@lib/types/database.types';
-import { supabase } from './SupabaseClient';
+import { ClientResponseError, type RecordModel } from 'pocketbase';
+import { currentUserId, pb } from './PocketBaseClient';
 
-export type MonthlyPlanRow =
-  Database['public']['Tables']['monthly_plan']['Row'];
-export type MonthlyPlanInsert =
-  Database['public']['Tables']['monthly_plan']['Insert'];
-export type MonthlyPlanUpdate =
-  Database['public']['Tables']['monthly_plan']['Update'];
+export type MonthlyPlanRow = {
+  id: string;
+  user: string;
+  month_year: string;
+  content: string;
+  created: string;
+  updated: string;
+};
+export type MonthlyPlanUpdate = Partial<Pick<MonthlyPlanRow, 'month_year' | 'content'>>;
 
-export async function monthlyPlanSelectByMonth(monthYear: string, userId: string) {
-  const { data, error } = await supabase
-    .from('monthly_plan')
-    .select('*')
-    .eq('month_year', monthYear)
-    .eq('user_id', userId)
-    .single();
+const plans = () => pb.collection('monthly_plan');
 
-  if (error && error.code !== 'PGRST116') throw error;
-  return data || null;
+const toRow = (record: RecordModel) => record as unknown as MonthlyPlanRow;
+
+const isNotFound = (err: unknown) =>
+  err instanceof ClientResponseError && err.status === 404;
+
+export async function monthlyPlanSelectByMonth(monthYear: string) {
+  try {
+    const record = await plans().getFirstListItem(
+      pb.filter('month_year = {:monthYear} && user = {:user}', {
+        monthYear,
+        user: currentUserId(),
+      }),
+    );
+    return toRow(record);
+  } catch (err) {
+    if (isNotFound(err)) return null;
+    throw err;
+  }
 }
 
-export async function monthlyPlanUpsert(plan: MonthlyPlanInsert) {
-  const { data, error } = await supabase
-    .from('monthly_plan')
-    .upsert([plan], {
-      onConflict: 'month_year,user_id',
-    })
-    .select()
-    .single();
+// PocketBase has no upsert: update the month's plan if it exists, else create it.
+// The unique (user, month_year) index rejects a duplicate create when two saves
+// race, in which case the plan now exists and we update it instead.
+export async function monthlyPlanUpsert(monthYear: string, content: string) {
+  const existing = await monthlyPlanSelectByMonth(monthYear);
+  if (existing) return monthlyPlanUpdate(existing.id, { content });
 
-  if (error) throw error;
-  return data;
+  try {
+    const record = await plans().create({
+      user: currentUserId(),
+      month_year: monthYear,
+      content,
+    });
+    return toRow(record);
+  } catch (err) {
+    const raced = await monthlyPlanSelectByMonth(monthYear);
+    if (!raced) throw err;
+    return monthlyPlanUpdate(raced.id, { content });
+  }
 }
 
 export async function monthlyPlanUpdate(id: string, plan: MonthlyPlanUpdate) {
-  const { data, error } = await supabase
-    .from('monthly_plan')
-    .update(plan)
-    .eq('id', id)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
+  const record = await plans().update(id, plan);
+  return toRow(record);
 }
 
 export async function monthlyPlanDelete(id: string) {
-  const { error } = await supabase.from('monthly_plan').delete().eq('id', id);
-  if (error) throw error;
+  await plans().delete(id);
 }

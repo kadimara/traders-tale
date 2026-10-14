@@ -196,7 +196,7 @@ function Row({ trade }: { trade: TradesRow }) {
                 <Link
                   role="button"
                   to="/trade/$id"
-                  params={{ id: String(trade.id) }}
+                  params={{ id: trade.id }}
                   aria-label="Open trade"
                   title="Open trade"
                 >

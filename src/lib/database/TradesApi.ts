@@ -1,21 +1,66 @@
-import { Constants, type Database } from '@lib/types/database.types';
-import { supabase } from './SupabaseClient';
+import type { RecordModel } from 'pocketbase';
+import { currentUserId, pb } from './PocketBaseClient';
 
-export type TradesRow = Database['public']['Tables']['trades']['Row'];
-export type TradesInsert = Database['public']['Tables']['trades']['Insert'];
-export type TradesUpdate = Database['public']['Tables']['trades']['Update'];
-export type TradeStatus = Database['public']['Enums']['trade_status'];
+export const TRADE_STATUSES = ['planned', 'taken', 'missed'] as const;
+export type TradeStatus = (typeof TRADE_STATUSES)[number];
 
-export const TRADE_STATUSES = Constants.public.Enums.trade_status;
+export type TradesRow = {
+  id: string;
+  user: string;
+  created_at: string;
+  symbol: string;
+  long_short: string;
+  account: number;
+  amount: number;
+  entry: number;
+  stop: number;
+  exit: number | null;
+  fees: number | null;
+  risk: number | null;
+  pnl: number | null;
+  journal: string | null;
+  playbook: boolean;
+  status: TradeStatus;
+};
+
+export type TradesInsert = Omit<
+  TradesRow,
+  'id' | 'user' | 'created_at' | 'status' | 'playbook' | 'exit' | 'fees' | 'risk' | 'pnl' | 'journal'
+> &
+  Partial<Pick<TradesRow, 'created_at' | 'status' | 'playbook' | 'exit' | 'fees' | 'risk' | 'pnl' | 'journal'>>;
+export type TradesUpdate = Partial<Omit<TradesRow, 'id' | 'user'>>;
+
+const trades = () => pb.collection('trades');
+
+// PocketBase stores empty number fields as 0 and empty text as "";
+// map those back to null so the UI keeps showing "—" for missing values.
+const nullIfZero = (n: number) => (n === 0 ? null : n);
+
+function toRow(record: RecordModel): TradesRow {
+  return {
+    id: record.id,
+    user: record.user,
+    // PocketBase returns "YYYY-MM-DD HH:mm:ss.sssZ"; use ISO so every browser parses it.
+    created_at: String(record.created_at).replace(' ', 'T'),
+    symbol: record.symbol,
+    long_short: record.long_short,
+    account: record.account,
+    amount: record.amount,
+    entry: record.entry,
+    stop: record.stop,
+    exit: nullIfZero(record.exit),
+    fees: nullIfZero(record.fees),
+    risk: nullIfZero(record.risk),
+    pnl: nullIfZero(record.pnl),
+    journal: record.journal || null,
+    playbook: record.playbook,
+    status: record.status,
+  };
+}
 
 export async function tradesSelectAll() {
-  const { data, error } = await supabase
-    .from('trades')
-    .select('*')
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data;
+  const records = await trades().getFullList({ sort: '-created_at' });
+  return records.map(toRow);
 }
 
 export async function tradesSelectByMonth(monthKey: string) {
@@ -23,64 +68,44 @@ export async function tradesSelectByMonth(monthKey: string) {
   const startDate = new Date(year, month - 1, 1);
   const endDate = new Date(year, month, 1);
 
-  const { data, error } = await supabase
-    .from('trades')
-    .select('*')
-    .gte('created_at', startDate.toISOString())
-    .lt('created_at', endDate.toISOString())
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data;
+  const records = await trades().getFullList({
+    filter: pb.filter('created_at >= {:start} && created_at < {:end}', {
+      start: startDate,
+      end: endDate,
+    }),
+    sort: '-created_at',
+  });
+  return records.map(toRow);
 }
 
 export async function tradesInsert(trade: TradesInsert) {
-  const { data, error } = await supabase
-    .from('trades')
-    .insert([trade])
-    .select()
-    .single();
-
-  if (error) throw error;
-  console.log(data);
-  return data;
+  const record = await trades().create({
+    created_at: new Date().toISOString(),
+    status: 'planned',
+    ...trade,
+    user: currentUserId(),
+  });
+  return toRow(record);
 }
 
-export async function tradesUpdate(id: number, trade: TradesUpdate) {
-  const { data, error } = await supabase
-    .from('trades')
-    .update(trade)
-    .eq('id', id) // pick row by ID
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
+export async function tradesUpdate(id: string, trade: TradesUpdate) {
+  const record = await trades().update(id, trade);
+  return toRow(record);
 }
 
-export async function tradesSelectById(id: number) {
-  const { data, error } = await supabase
-    .from('trades')
-    .select('*')
-    .eq('id', id)
-    .single();
-
-  if (error) throw error;
-  return data;
+export async function tradesSelectById(id: string) {
+  const record = await trades().getOne(id);
+  return toRow(record);
 }
 
-export async function tradesDelete(id: number) {
-  const { error } = await supabase.from('trades').delete().eq('id', id);
-  if (error) throw error;
+export async function tradesDelete(id: string) {
+  await trades().delete(id);
 }
 
 export async function tradesSelectPlaybook() {
-  const { data, error } = await supabase
-    .from('trades')
-    .select('*')
-    .eq('playbook', true)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data;
+  const records = await trades().getFullList({
+    filter: 'playbook = true',
+    sort: '-created_at',
+  });
+  return records.map(toRow);
 }
