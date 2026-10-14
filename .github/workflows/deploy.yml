@@ -32,8 +32,8 @@ jobs:
 
       - name: Build
         env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_KEY: ${{ secrets.VITE_SUPABASE_KEY }}
+          # Self-hosted PocketBase, published through a Cloudflare Tunnel
+          VITE_POCKETBASE_URL: https://api.traders-tale.com
         run: npm run build
 
       - name: Setup Pages

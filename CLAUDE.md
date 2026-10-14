@@ -20,6 +20,8 @@ There is no test suite. The PocketBase binary and its data (`pocketbase/pb_data`
 
 **Traders Tale** is a personal trading journal SPA — React 19 + TypeScript, built with Vite, deployed to GitHub Pages at `/traders-tale/`, backed by a self-hosted **PocketBase** server.
 
+Production PocketBase is self-hosted on a home PC and published at `https://api.traders-tale.com` through a Cloudflare Tunnel (the `Cloudflared` Windows service forwards to `127.0.0.1:8090`); the deploy workflow builds with that `VITE_POCKETBASE_URL`. Public sign-ups are closed, so users are created by a superuser in the dashboard.
+
 This branch is a trial of PocketBase as a Supabase replacement. Supabase leftovers (`SupabaseClient.ts`, `src/lib/types/database.types.ts`, the `supa-*` npm scripts, the `supabase/` folder and the `@supabase/supabase-js` dependency) are unused here and can be removed once PocketBase is adopted.
 
 ### Routing
