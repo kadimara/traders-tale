@@ -18,7 +18,7 @@ type TradesContextType = {
   loading: boolean;
   error: Error | null;
   insertTrade: (trade: TradesInsert) => Promise<TradesRow>;
-  updateTrade: (id: string, trade: TradesUpdate) => Promise<void>;
+  updateTrade: (id: string, trade: TradesUpdate) => Promise<TradesRow>;
   deleteTrade: (id: string) => Promise<void>;
   reloadTrades: () => Promise<void>;
 };
@@ -58,6 +58,7 @@ export function TradesProvider({ children }: PropsWithChildren) {
       (prev) =>
         prev?.map((t) => (t.id === updatedTrade.id ? updatedTrade : t)) || null
     );
+    return updatedTrade;
   }
   // Refetch after changes made outside this context, e.g. an OKX sync.
   async function reloadTrades() {
