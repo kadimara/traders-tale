@@ -95,7 +95,7 @@ export default function Trade() {
         </thead>
         <tbody>
           <tr style={{ pointerEvents: 'none' }}>
-            <th>{toUSD(trade.account)}</th>
+            <th>{toUSD(Math.round(trade.account))}</th>
             <th>{formatTradeSize(trade)}</th>
             <th>{toUSD(trade.stop)}</th>
             <th>{toUSD(trade.entry)}</th>

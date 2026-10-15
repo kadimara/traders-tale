@@ -42,7 +42,7 @@ export function TradesTable() {
     const prev = trades[0];
     // The live OKX balance; without a working OKX connection, carry the account forward.
     const account = await okxBalance().then(
-      ({ totalEq }) => Math.round(totalEq),
+      ({ totalEq }) => totalEq,
       () => (prev ? getAccountAfterTrade(prev) : 0),
     );
     const trade = await insertTrade({
@@ -329,7 +329,7 @@ const columns: {
       return editable ? (
         <InputNumber name="account" value={row.account} onChange={onChange} />
       ) : (
-        toUSD(row.account)
+        toUSD(Math.round(row.account))
       );
     },
   },
