@@ -12,7 +12,7 @@ import {
   type TradesUpdate,
 } from '@lib/database/TradesApi';
 import { formatDateTime, toDateTimeLocalInput } from '@lib/utils/DateUtils';
-import { round, toUSD } from '@lib/utils/MathUtils';
+import { toUSD } from '@lib/utils/MathUtils';
 import { okxBalance } from '@lib/database/OkxApi';
 import {
   contractsToUsd,
@@ -42,7 +42,7 @@ export function TradesTable() {
     const prev = trades[0];
     // The live OKX balance; without a working OKX connection, carry the account forward.
     const account = await okxBalance().then(
-      ({ totalEq }) => round(totalEq, 2),
+      ({ totalEq }) => Math.round(totalEq),
       () => (prev ? getAccountAfterTrade(prev) : 0),
     );
     const trade = await insertTrade({
