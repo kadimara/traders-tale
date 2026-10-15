@@ -45,7 +45,7 @@ SessionProvider (App.tsx)  → PocketBase auth (pb.authStore); redirects to /aut
 ```
 
 - **`monthKey`** is the canonical month identifier: `"YYYY-MM-01"` string. It is the `month_year` field value and used as a date range filter on `created_at`.
-- **`TradesProvider`** re-fetches trades whenever `monthKey` changes; `reloadTrades()` refetches after changes made elsewhere (e.g. an OKX sync).
+- **`TradesProvider`** re-fetches trades whenever `monthKey` changes and applies live updates from a PocketBase realtime subscription (`tradesSubscribe`), so changes made on the server (e.g. the OKX order check) show up without a reload; `reloadTrades()` refetches after bulk changes (e.g. an OKX sync).
 
 ### Database layer (`src/lib/database/`)
 

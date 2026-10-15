@@ -68,10 +68,20 @@ export async function tradesSelectAll() {
   return records.map(toRow);
 }
 
-export async function tradesSelectByMonth(monthKey: string) {
+/** Start (inclusive) and end (exclusive) of a "YYYY-MM-01" month in local time. */
+function monthRange(monthKey: string) {
   const [year, month] = monthKey.split('-').map(Number);
-  const startDate = new Date(year, month - 1, 1);
-  const endDate = new Date(year, month, 1);
+  return { startDate: new Date(year, month - 1, 1), endDate: new Date(year, month, 1) };
+}
+
+export function isTradeInMonth(trade: TradesRow, monthKey: string) {
+  const { startDate, endDate } = monthRange(monthKey);
+  const date = new Date(trade.created_at);
+  return date >= startDate && date < endDate;
+}
+
+export async function tradesSelectByMonth(monthKey: string) {
+  const { startDate, endDate } = monthRange(monthKey);
 
   const records = await trades().getFullList({
     filter: pb.filter('created_at >= {:start} && created_at < {:end}', {
@@ -113,4 +123,12 @@ export async function tradesSelectPlaybook() {
     sort: '-created_at',
   });
   return records.map(toRow);
+}
+
+/**
+ * Calls `onChange` whenever one of the user's trades is created, updated or
+ * deleted, e.g. by the OKX order check on the server. Returns the unsubscribe function.
+ */
+export function tradesSubscribe(onChange: (action: 'create' | 'update' | 'delete', trade: TradesRow) => void) {
+  return trades().subscribe('*', (e) => onChange(e.action as 'create' | 'update' | 'delete', toRow(e.record)));
 }
