@@ -1,14 +1,19 @@
 /// <reference path="../pb_data/types.d.ts" />
 
-// Syncs closed OKX positions into the user's trades (read-only towards OKX).
+// Syncs the user's trades with OKX (read-only towards OKX).
 //
 // Each closed position either fills in the journal trade it belongs to, or
-// becomes a new "taken" trade. A trade matches when it has the same symbol and
+// becomes a new "closed" trade. A trade matches when it has the same symbol and
 // direction, was created within MATCH_WINDOW_MS of the position opening, and its
 // entry is within MATCH_PRICE of OKX's average open price. Pairs are assigned
 // best-first (closest price and time), so an exact match is never taken by a
-// neighbouring position.
+// neighbouring position. A live or filled trade placed as an OKX order
+// (okx_order) matches a position on that instrument opened any time after the
+// trade, not only within the window.
 // Synced trades store okx_pos_key, so a position is never imported twice.
+//
+// Live trades whose order has since filled or been cancelled on OKX get the
+// matching status (see statusOf in okx_order.js).
 
 const MATCH_WINDOW_MS = 36 * 3600 * 1000;
 const MATCH_PRICE = 0.003; // 0.3%
@@ -26,7 +31,7 @@ function positionFields(p, ctVal) {
     // OKX reports costs as negative numbers; trades store them as a positive cost.
     fees: round(-(Number(p.fee) + Number(p.fundingFee) + Number(p.liqPenalty || 0)), 4),
     pnl: round(Number(p.realizedPnl), 4),
-    status: 'taken',
+    status: 'closed',
   };
 }
 
@@ -68,7 +73,12 @@ function plan(app, userId) {
       if (r.getString('okx_pos_key')) continue;
       if (r.getString('symbol').trim().toUpperCase() !== item.symbol) continue;
       if (r.getString('long_short') !== item.direction) continue;
-      const timeDiff = Math.abs(timeOf(r) - item.openTime);
+      // A trade sent to OKX as an order may fill any time after it was planned.
+      const ordered =
+        ['live', 'filled'].includes(r.getString('status')) &&
+        r.getString('okx_order').split(':')[0] === item.p.instId &&
+        item.openTime >= timeOf(r);
+      const timeDiff = ordered ? 0 : Math.abs(timeOf(r) - item.openTime);
       const entry = r.getFloat('entry');
       if (timeDiff > MATCH_WINDOW_MS || !(entry > 0)) continue;
       const priceDiff = Math.abs(entry / item.fields.entry - 1);
@@ -123,14 +133,14 @@ function plan(app, userId) {
   }
 
   // New trades carry the account forward from the trade before them, like
-  // adding a trade in the table does (account + PnL of a taken trade).
+  // adding a trade in the table does (account + PnL of a closed trade).
   const timeline = records
     .map((r) => {
       const update = updates.find((u) => u.tradeId === r.id);
       return {
         time: timeOf(r),
         account: r.getFloat('account'),
-        status: update ? 'taken' : r.getString('status'),
+        status: update ? 'closed' : r.getString('status'),
         pnl: update ? update.changes.pnl : r.getFloat('pnl'),
       };
     })
@@ -139,15 +149,33 @@ function plan(app, userId) {
   let prev = null;
   for (const item of timeline) {
     if (item.create) {
-      item.account = prev ? round(prev.account + (prev.status === 'taken' ? prev.pnl : 0), 2) : 0;
-      item.status = 'taken';
+      item.account = prev ? round(prev.account + (prev.status === 'closed' ? prev.pnl : 0), 2) : 0;
+      item.status = 'closed';
       item.pnl = item.create.changes.pnl;
       item.create.changes.account = item.account;
     }
     prev = item;
   }
 
-  return { updates, creates, alreadySynced, closedPositions: positions.length };
+  // Live orders that filled or were cancelled since they were placed.
+  const okxOrder = require(`${__hooks}/okx_order.js`);
+  const orders = [];
+  for (const r of records) {
+    if (r.getString('status') !== 'live' || !r.getString('okx_order')) continue;
+    if (updates.some((u) => u.tradeId === r.id)) continue; // already closed by a position
+    const status = okxOrder.statusOf(okxOrder.fetchOrder(okx, conn, r.getString('okx_order')));
+    if (status === 'live') continue;
+    orders.push({
+      tradeId: r.id,
+      date: new Date(timeOf(r)).toISOString(),
+      symbol: r.getString('symbol'),
+      long_short: r.getString('long_short'),
+      statusBefore: 'live',
+      status,
+    });
+  }
+
+  return { updates, creates, orders, alreadySynced, closedPositions: positions.length };
 }
 
 /** Writes a plan in one transaction. */
@@ -157,6 +185,12 @@ function apply(app, userId, result) {
       const record = txApp.findRecordById('trades', u.tradeId);
       if (record.getString('user') !== userId) throw new ForbiddenError('Trade does not belong to you.');
       for (const [name, value] of Object.entries(u.changes)) record.set(name, value);
+      txApp.save(record);
+    }
+    for (const o of result.orders) {
+      const record = txApp.findRecordById('trades', o.tradeId);
+      if (record.getString('user') !== userId) throw new ForbiddenError('Trade does not belong to you.');
+      record.set('status', o.status);
       txApp.save(record);
     }
     const collection = txApp.findCollectionByNameOrId('trades');

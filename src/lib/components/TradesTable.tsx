@@ -1,10 +1,11 @@
 import { useState, type CSSProperties, type ReactNode } from 'react';
-import { Circle, Download, DownloadCloud, Edit, ExternalLink, Info, Plus, Save, X } from 'react-feather';
+import { Circle, Download, DownloadCloud, Edit, ExternalLink, Info, Plus, Save, Send, X, XOctagon } from 'react-feather';
 import { Link } from '@tanstack/react-router';
 import { useTradesContext } from '../context/TradesContext';
 import { useMonthContext } from '../context/MonthContext';
 import { setLocalStorageItem, useLocalStorage } from '../hooks/useLocalStorage';
 import { useOkxSync } from '../hooks/useOkxSync';
+import { useOkxOrder } from '../hooks/useOkxOrder';
 import {
   TRADE_STATUSES,
   type TradeStatus,
@@ -105,6 +106,7 @@ export function TradesTable() {
 
 function Row({ trade }: { trade: TradesRow }) {
   const { updateTrade } = useTradesContext();
+  const { send, cancel, sending } = useOkxOrder();
   const [tradeLocal, setTradeLocal] =
     useLocalStorage<Partial<TradesRow> | null>(`trade${trade.id}`, null);
   const tradeCombined = { ...trade, ...tradeLocal };
@@ -167,8 +169,9 @@ function Row({ trade }: { trade: TradesRow }) {
         style={{
           background: showDetails ? 'var(--color-bg-highlight)' : undefined,
           borderBottomColor: showDetails ? 'transparent' : undefined,
-          color: trade.status === 'missed' && !editing ? 'gray' : undefined,
-          boxShadow: trade.status === 'planned' ? 'inset 3px 0 0 var(--color-main)' : undefined,
+          color: trade.status === 'canceled' && !editing ? 'gray' : undefined,
+          boxShadow:
+            trade.status === 'planned' || trade.status === 'live' ? 'inset 3px 0 0 var(--color-main)' : undefined,
         }}
       >
         {columns.map((col) => {
@@ -183,7 +186,7 @@ function Row({ trade }: { trade: TradesRow }) {
             </th>
           );
         })}
-        <th style={{ justifyItems: 'center', width: 100 }}>
+        <th style={{ justifyItems: 'center', width: 130 }}>
           <div className="flex gap-1">
             {editing ? (
               <>
@@ -210,6 +213,26 @@ function Row({ trade }: { trade: TradesRow }) {
                 >
                   {showDetails ? <Circle /> : <Info />}
                 </button>
+                {trade.status === 'planned' && (
+                  <button
+                    aria-label="Send to OKX"
+                    title="Send to OKX as a limit order with stop-loss"
+                    onClick={() => send(trade.id)}
+                    disabled={sending}
+                  >
+                    <Send />
+                  </button>
+                )}
+                {trade.status === 'live' && trade.okx_order && (
+                  <button
+                    aria-label="Cancel OKX order"
+                    title={`Cancel the OKX order (${trade.okx_order})`}
+                    onClick={() => cancel(trade.id)}
+                    disabled={sending}
+                  >
+                    <XOctagon />
+                  </button>
+                )}
                 <Link
                   role="button"
                   to="/trade/$id"
@@ -434,7 +457,7 @@ const columns: {
     style: { width: 64, textAlign: 'right' },
     render: (row) => (
       // -1 = red, 0 = currentColor, 1 = green
-      <span className={row.status === 'taken' ? 'number' + Math.sign(row.pnl || 0) : ''}>
+      <span className={row.status === 'closed' ? 'number' + Math.sign(row.pnl || 0) : ''}>
         {toUSD(row.pnl)}
       </span>
     ),

@@ -185,6 +185,7 @@ function symbolOf(instId) {
 
 module.exports = {
   hexToBase64,
+  request,
   connectionFor,
   encryptConnection,
   closedPositions,

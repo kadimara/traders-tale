@@ -1,10 +1,12 @@
-import { createContext, useContext, type PropsWithChildren } from 'react';
+import { createContext, useContext, useEffect, type PropsWithChildren } from 'react';
 import { useAsync } from '../hooks/useAsync';
 import { useMonthContext } from './MonthContext';
 import {
+  isTradeInMonth,
   tradesDelete,
   tradesInsert,
   tradesSelectByMonth,
+  tradesSubscribe,
   tradesUpdate,
   type TradesInsert,
   type TradesRow,
@@ -28,6 +30,22 @@ export function TradesProvider({ children }: PropsWithChildren) {
   const { data, error, loading, setData } = useAsync(
     () => tradesSelectByMonth(monthKey)
   );
+
+  // Live updates: apply changes made elsewhere (the server's OKX order check,
+  // another tab) to the trades of the shown month, newest first.
+  useEffect(() => {
+    const unsubscribe = tradesSubscribe((action, trade) => {
+      setData((prev) => {
+        if (!prev) return prev;
+        const others = prev.filter((t) => t.id !== trade.id);
+        if (action === 'delete' || !isTradeInMonth(trade, monthKey)) return others;
+        return [...others, trade].sort((a, b) => b.created_at.localeCompare(a.created_at));
+      });
+    });
+    return () => {
+      unsubscribe.then((fn) => fn());
+    };
+  }, [monthKey, setData]);
 
   async function insertTrade(trade: TradesInsert) {
     const insertedTrade = await tradesInsert(trade);
