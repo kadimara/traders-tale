@@ -155,6 +155,12 @@ function closedPositions(conn) {
   return all;
 }
 
+/** Total equity of the trading account in USD, including unrealized PnL. */
+function accountEquity(conn) {
+  const data = request(conn, 'GET', '/api/v5/account/balance', null, true);
+  return Number(data[0].totalEq);
+}
+
 /** Contract value (coins per contract) of an instrument, from OKX's public list. */
 function contractValue(conn, instType, instId, cache) {
   const key = instType + ':' + instId;
@@ -182,6 +188,7 @@ module.exports = {
   connectionFor,
   encryptConnection,
   closedPositions,
+  accountEquity,
   contractValue,
   symbolOf,
 };

@@ -13,6 +13,7 @@ import {
 } from '@lib/database/TradesApi';
 import { formatDateTime, toDateTimeLocalInput } from '@lib/utils/DateUtils';
 import { toUSD } from '@lib/utils/MathUtils';
+import { okxBalance } from '@lib/database/OkxApi';
 import {
   contractsToUsd,
   exportTradesToCsv,
@@ -39,8 +40,13 @@ export function TradesTable() {
   const handleAddTrade = async () => {
     // Trades are sorted newest first
     const prev = trades[0];
+    // The live OKX balance; without a working OKX connection, carry the account forward.
+    const account = await okxBalance().then(
+      ({ totalEq }) => totalEq,
+      () => (prev ? getAccountAfterTrade(prev) : 0),
+    );
     const trade = await insertTrade({
-      account: prev ? getAccountAfterTrade(prev) : 0,
+      account,
       amount: 0,
       entry: 0,
       journal: tradePlanTemplate,
@@ -323,7 +329,7 @@ const columns: {
       return editable ? (
         <InputNumber name="account" value={row.account} onChange={onChange} />
       ) : (
-        toUSD(row.account)
+        toUSD(Math.round(row.account))
       );
     },
   },
