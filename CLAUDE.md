@@ -18,15 +18,19 @@ There is no test suite. The PocketBase binary and its data (`pocketbase/pb_data`
 
 ## Architecture
 
-**Traders Tale** is a personal trading journal SPA — React 19 + TypeScript, built with Vite, deployed to GitHub Pages at `/traders-tale/`, backed by a self-hosted **PocketBase** server.
+**Traders Tale** is a personal trading journal SPA — React 19 + TypeScript, built with Vite, deployed to GitHub Pages at `https://traders-tale.com` (custom domain, set in the repo's Pages settings), backed by a self-hosted **PocketBase** server.
 
-Production PocketBase is self-hosted on a home PC and published at `https://api.traders-tale.com` through a Cloudflare Tunnel (the `Cloudflared` Windows service forwards to `127.0.0.1:8090`); the deploy workflow builds with that `VITE_POCKETBASE_URL`. Public sign-ups are closed, so users are created by a superuser in the dashboard.
+Production PocketBase runs on a Raspberry Pi Zero W (`admin@pocketbase`, Raspbian, ARMv6) and is published at `https://api.traders-tale.com` through a Cloudflare Tunnel (`cloudflared` on the Pi forwards to `127.0.0.1:8090`); the deploy workflow builds with that `VITE_POCKETBASE_URL`. Public sign-ups are closed, so users are created by a superuser in the dashboard (`http://pocketbase:8090/_/` on the LAN).
+
+- On the Pi everything lives in `~/pb` (`pocketbase` binary, `pb_data`, `pb_migrations`, `pb_hooks`, `okx.key`), run by the `pocketbase` systemd service (`sudo systemctl restart pocketbase`, logs via `journalctl -u pocketbase`).
+- Official PocketBase releases don't support ARMv6, so the binary is cross-compiled from the PocketBase source (`examples/base`) with `GOOS=linux GOARCH=arm GOARM=6 CGO_ENABLED=0`. Keep its version equal to the local `pocketbase.exe`.
+- To deploy migration or hook changes, copy `pocketbase/pb_migrations` and `pocketbase/pb_hooks` to `~/pb` on the Pi and restart the service.
 
 This branch is a trial of PocketBase as a Supabase replacement. Supabase leftovers (`SupabaseClient.ts`, `src/lib/types/database.types.ts`, the `supa-*` npm scripts, the `supabase/` folder and the `@supabase/supabase-js` dependency) are unused here and can be removed once PocketBase is adopted.
 
 ### Routing
 
-`@tanstack/react-router`, configured in `src/router.tsx` with `basepath: '/traders-tale'`. A pathless `layout` route wraps the authenticated pages (`/`, `/journal`, `/playbook`, `/trade/$id`) with `MonthProvider`, `TradesProvider` and `Layout`; `/auth` sits outside it. Use `Link`/`useNavigate` from TanStack Router.
+`@tanstack/react-router`, configured in `src/router.tsx` (served from the domain root). A pathless `layout` route wraps the authenticated pages (`/`, `/journal`, `/playbook`, `/trade/$id`) with `MonthProvider`, `TradesProvider` and `Layout`; `/auth` sits outside it. Use `Link`/`useNavigate` from TanStack Router.
 
 ### Context hierarchy
 

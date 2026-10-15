@@ -70,7 +70,6 @@ const routeTree = rootRoute.addChildren([
 
 export const router = createRouter({
   routeTree,
-  basepath: '/traders-tale',
 });
 
 declare module '@tanstack/react-router' {

@@ -16,7 +16,7 @@ type SessionContextType = {
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
 
 function isPublicRoute() {
-  return window.location.pathname.startsWith('/traders-tale/trade/');
+  return window.location.pathname.startsWith('/trade/');
 }
 
 function currentUser() {
