@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react';
-import { Star } from 'react-feather';
+import { Edit, Save, Send, Star, X, XOctagon } from 'react-feather';
 import { Link, useParams } from '@tanstack/react-router';
-import { tradesSelectById, type TradesRow } from '@lib/database/TradesApi';
+import { tradesSelectById, tradesSubscribe, type TradesRow } from '@lib/database/TradesApi';
 import { useTradesContext } from '@lib/context/TradesContext';
 import { formatDate } from '@lib/utils/DateUtils';
-import { toUSD } from '@lib/utils/MathUtils';
 import { TradeDocument } from '@lib/components/TradeDocument';
-import { formatTradeSize } from '@lib/utils/TradeUtils';
+import { TradeCells, TradeColumnHeaders } from '@lib/components/TradesTable';
+import { useTradeEdit } from '@lib/hooks/useTradeEdit';
+import { useOkxOrder } from '@lib/hooks/useOkxOrder';
 
 export default function Trade() {
   const { id } = useParams({ from: '/layout/trade/$id' });
-  const { updateTrade } = useTradesContext();
   const [trade, setTrade] = useState<TradesRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -22,17 +22,17 @@ export default function Trade() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  const handleSave = async (journal: string) => {
-    if (!trade) return;
-    await updateTrade(trade.id, { journal });
-    setTrade((prev) => prev && { ...prev, journal });
-  };
-
-  const handleTogglePlaybook = async () => {
-    if (!trade) return;
-    await updateTrade(trade.id, { playbook: !trade.playbook });
-    setTrade((prev) => prev && { ...prev, playbook: !prev.playbook });
-  };
+  // Live updates, e.g. after sending the trade to OKX or the server's order check.
+  useEffect(() => {
+    const unsubscribe = tradesSubscribe((action, changed) => {
+      if (changed.id !== id) return;
+      if (action === 'delete') setNotFound(true);
+      else setTrade(changed);
+    });
+    return () => {
+      unsubscribe.then((fn) => fn());
+    };
+  }, [id]);
 
   if (loading) return <main>Loading...</main>;
 
@@ -44,6 +44,28 @@ export default function Trade() {
       </main>
     );
   }
+
+  return <TradeView trade={trade} onSaved={setTrade} />;
+}
+
+// Already shown in the title.
+const hiddenColumns: (keyof TradesRow)[] = ['created_at', 'symbol', 'long_short'];
+
+function TradeView({
+  trade,
+  onSaved,
+}: {
+  trade: TradesRow;
+  onSaved: (trade: TradesRow) => void;
+}) {
+  const { updateTrade } = useTradesContext();
+  const { send, cancel: cancelOrder, sending } = useOkxOrder();
+  // One edit mode for the table row and the journal, saved together.
+  const { draft, editing, edit, save, cancel, change } = useTradeEdit(trade, onSaved);
+
+  const handleTogglePlaybook = async () => {
+    onSaved(await updateTrade(trade.id, { playbook: !trade.playbook }));
+  };
 
   return (
     <main
@@ -60,6 +82,42 @@ export default function Trade() {
             #{trade.id} · {formatDate(trade.created_at)}
           </span>
         </div>
+        {editing ? (
+          <>
+            <button aria-label="Save" title="Save" onClick={save}>
+              <Save />
+            </button>
+            <button aria-label="Cancel" title="Cancel" onClick={cancel}>
+              <X />
+            </button>
+          </>
+        ) : (
+          <>
+            <button aria-label="Edit" title="Edit" onClick={edit}>
+              <Edit />
+            </button>
+            {trade.status === 'planned' && (
+              <button
+                aria-label="Send to OKX"
+                title="Send to OKX as a limit order with stop-loss"
+                onClick={() => send(trade.id)}
+                disabled={sending}
+              >
+                <Send />
+              </button>
+            )}
+            {trade.status === 'live' && trade.okx_order && (
+              <button
+                aria-label="Cancel OKX order"
+                title={`Cancel the OKX order (${trade.okx_order})`}
+                onClick={() => cancelOrder(trade.id)}
+                disabled={sending}
+              >
+                <XOctagon />
+              </button>
+            )}
+          </>
+        )}
         <button
           aria-label={
             trade.playbook ? 'Remove from playbook' : 'Add to playbook'
@@ -82,42 +140,26 @@ export default function Trade() {
       <table>
         <thead className="text-muted" style={{ fontSize: '0.82rem' }}>
           <tr>
-            <th>ACCOUNT</th>
-            <th>SIZE</th>
-            <th>SL</th>
-            <th>ENTRY</th>
-            <th>EXIT</th>
-            <th>FEES</th>
-            <th>RISK</th>
-            <th>PNL</th>
-            <th>STATUS</th>
+            <TradeColumnHeaders hide={hiddenColumns} />
           </tr>
         </thead>
         <tbody>
-          <tr style={{ pointerEvents: 'none' }}>
-            <th>{toUSD(Math.round(trade.account))}</th>
-            <th>{formatTradeSize(trade)}</th>
-            <th>{toUSD(trade.stop)}</th>
-            <th>{toUSD(trade.entry)}</th>
-            <th>{toUSD(trade.exit) ?? '—'}</th>
-            <th>{toUSD(trade.fees ? -trade.fees : trade.fees) ?? '—'}</th>
-            <th>
-              {trade.risk != null ? (trade.risk * 100).toFixed(2) + '%' : '—'}
-            </th>
-            <th>
-              <span
-                className={
-                  trade.status === 'closed' ? 'number' + Math.sign(trade.pnl ?? 0) : ''
-                }
-              >
-                {toUSD(trade.pnl) ?? '—'}
-              </span>
-            </th>
-            <th>{trade.status}</th>
+          <tr>
+            <TradeCells
+              trade={draft}
+              editing={editing}
+              onChange={change}
+              hide={hiddenColumns}
+              center
+            />
           </tr>
         </tbody>
       </table>
-      <TradeDocument trade={trade} onSave={handleSave} />
+      <TradeDocument
+        trade={draft}
+        editing={editing}
+        onChange={(journal) => change('journal', journal)}
+      />
     </main>
   );
 }

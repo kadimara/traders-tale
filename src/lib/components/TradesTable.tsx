@@ -1,16 +1,16 @@
-import { useState, type CSSProperties, type ReactNode } from 'react';
-import { Circle, Download, DownloadCloud, Edit, ExternalLink, Info, Plus, Save, Send, X, XOctagon } from 'react-feather';
+import { type CSSProperties, type ReactNode } from 'react';
+import { Download, DownloadCloud, Edit, ExternalLink, Plus, Save, Send, X, XOctagon } from 'react-feather';
 import { Link } from '@tanstack/react-router';
 import { useTradesContext } from '../context/TradesContext';
 import { useMonthContext } from '../context/MonthContext';
-import { setLocalStorageItem, useLocalStorage } from '../hooks/useLocalStorage';
+import { setLocalStorageItem } from '../hooks/useLocalStorage';
 import { useOkxSync } from '../hooks/useOkxSync';
 import { useOkxOrder } from '../hooks/useOkxOrder';
+import { useTradeEdit } from '../hooks/useTradeEdit';
 import {
   TRADE_STATUSES,
   type TradeStatus,
   type TradesRow,
-  type TradesUpdate,
 } from '@lib/database/TradesApi';
 import { formatDateTime, toDateTimeLocalInput } from '@lib/utils/DateUtils';
 import { toUSD } from '@lib/utils/MathUtils';
@@ -21,17 +21,12 @@ import {
   formatTradeSize,
   getAccountAfterTrade,
   getContractSize,
-  getTradeAmountForRisk,
-  getTradeLongShort,
-  getTradePnl,
-  getTradeRisk,
   usdToContracts,
 } from '@lib/utils/TradeUtils';
 // Default journal for new trades. Edit the .md file to change it.
 import tradePlanTemplate from '@lib/templates/TradePlan.md?raw';
 import { Input } from './Input';
 import { InputNumber } from './InputNumber';
-import { TradeDocument } from './TradeDocument';
 
 export function TradesTable() {
   const { trades, insertTrade } = useTradesContext();
@@ -64,9 +59,7 @@ export function TradesTable() {
       <table>
         <thead>
           <tr style={{ position: 'sticky', top: 10 }}>
-            {columns.map((col) => (
-              <th key={col.key}>{col.label}</th>
-            ))}
+            <TradeColumnHeaders />
             <th>
               <div className="flex gap-1" style={{ justifyContent: 'center' }}>
                 <button aria-label="Export CSV" title="Export CSV" onClick={() => exportTradesToCsv(trades, monthKey)}>
@@ -89,7 +82,7 @@ export function TradesTable() {
         </thead>
         <tbody>
           {trades?.map((trade) => (
-            <Row key={trade.id} trade={trade} />
+            <TradeRow key={trade.id} trade={trade} />
           ))}
         </tbody>
       </table>
@@ -104,171 +97,114 @@ export function TradesTable() {
   );
 }
 
-function Row({ trade }: { trade: TradesRow }) {
-  const { updateTrade } = useTradesContext();
-  const { send, cancel, sending } = useOkxOrder();
-  const [tradeLocal, setTradeLocal] =
-    useLocalStorage<Partial<TradesRow> | null>(`trade${trade.id}`, null);
-  const tradeCombined = { ...trade, ...tradeLocal };
+// `hide` leaves out columns, e.g. the ones the trade page shows in its title.
+export function TradeColumnHeaders({ hide = [] }: { hide?: (keyof TradesRow)[] }) {
+  return tradeColumns
+    .filter((col) => !hide.includes(col.key))
+    .map((col) => <th key={col.key}>{col.label}</th>);
+}
 
-  const [d, setShowDetails] = useState(false);
-  const toggleDetails = () => setShowDetails((v) => !v);
-  const editing = tradeLocal !== null;
-  const showDetails = d || editing;
+function TradeRow({ trade }: { trade: TradesRow }) {
+  const { send, cancel: cancelOrder, sending } = useOkxOrder();
+  const { draft, editing, edit, save, cancel, change } = useTradeEdit(trade);
 
-  const handleEdit = () => {
-    setTradeLocal({});
-  };
   // const handleDelete = () => {
   //   const result = confirm('Are you sure you want to delete this trade?');
   //   if (result) deleteTrade(trade.id);
   // };
-  const handleSave = async () => {
-    if (tradeLocal && Object.keys(tradeLocal).length > 0) {
-      await updateTrade(trade.id, {
-        ...tradeLocal,
-      } as TradesUpdate);
-    }
-    setTradeLocal(null);
-  };
-  const handleCancel = () => {
-    setTradeLocal(null);
-  };
-
-  const handleChange = (key: keyof TradesRow, value: unknown) => {
-    setTradeLocal((prev) => {
-      const local = { ...prev, [key]: value };
-      const contractSize = getContractSize(local.symbol ?? trade.symbol);
-      const prevEntry = prev?.entry ?? trade.entry;
-      const planned = (local.status ?? trade.status) === 'planned';
-      // Planned trades always size from the fixed risk; others only while no amount is set
-      if (key !== 'amount' && (planned || !(prev?.amount ?? trade.amount))) {
-        const amount = getTradeAmountForRisk({ ...trade, ...local });
-        if (amount !== undefined) local.amount = amount;
-      } else if (key === 'entry' && prev?.amount && contractSize && prevEntry) {
-        // Keep the contract count when the entry changes after contracts were entered
-        const contracts = usdToContracts(prev.amount, contractSize, prevEntry);
-        local.amount = contractsToUsd(contracts, contractSize, value as number);
-      }
-      const combined = { ...trade, ...local };
-      const long_short = getTradeLongShort({ ...combined });
-      const risk = getTradeRisk({ ...combined, long_short });
-      const pnl = getTradePnl({ ...combined, risk, long_short });
-      return {
-        ...local,
-        long_short,
-        risk,
-        pnl,
-      };
-    });
-  };
 
   return (
-    <>
-      <tr
-        style={{
-          background: showDetails ? 'var(--color-bg-highlight)' : undefined,
-          borderBottomColor: showDetails ? 'transparent' : undefined,
-          color: trade.status === 'canceled' && !editing ? 'gray' : undefined,
-          boxShadow:
-            trade.status === 'planned' || trade.status === 'live' ? 'inset 3px 0 0 var(--color-main)' : undefined,
-        }}
-      >
-        {columns.map((col) => {
-          const render = col.render ?? ((row: TradesRow) => row[col.key]);
-          return (
-            <th key={col.key} style={col.style}>
-              {render(
-                tradeCombined,
-                editing,
-                (value) => handleChange(col.key, value),
+    <tr
+      style={{
+        background: editing ? 'var(--color-bg-highlight)' : undefined,
+        color: trade.status === 'canceled' && !editing ? 'gray' : undefined,
+        boxShadow:
+          trade.status === 'planned' || trade.status === 'live' ? 'inset 3px 0 0 var(--color-main)' : undefined,
+      }}
+    >
+      <TradeCells trade={draft} editing={editing} onChange={change} />
+      <th style={{ justifyItems: 'center', width: 130 }}>
+        <div className="flex gap-1">
+          {editing ? (
+            <>
+              <button aria-label="Save" title="Save" onClick={save}>
+                <Save />
+              </button>
+              <button
+                aria-label="Cancel"
+                title="Cancel"
+                onClick={cancel}
+              >
+                <X />
+              </button>
+            </>
+          ) : (
+            <>
+              <button aria-label="Edit" title="Edit" onClick={edit}>
+                <Edit />
+              </button>
+              {trade.status === 'planned' && (
+                <button
+                  aria-label="Send to OKX"
+                  title="Send to OKX as a limit order with stop-loss"
+                  onClick={() => send(trade.id)}
+                  disabled={sending}
+                >
+                  <Send />
+                </button>
               )}
-            </th>
-          );
-        })}
-        <th style={{ justifyItems: 'center', width: 130 }}>
-          <div className="flex gap-1">
-            {editing ? (
-              <>
-                <button aria-label="Save" title="Save" onClick={handleSave}>
-                  <Save />
-                </button>
+              {trade.status === 'live' && trade.okx_order && (
                 <button
-                  aria-label="Cancel"
-                  title="Cancel"
-                  onClick={handleCancel}
+                  aria-label="Cancel OKX order"
+                  title={`Cancel the OKX order (${trade.okx_order})`}
+                  onClick={() => cancelOrder(trade.id)}
+                  disabled={sending}
                 >
-                  <X />
+                  <XOctagon />
                 </button>
-              </>
-            ) : (
-              <>
-                <button aria-label="Edit" title="Edit" onClick={handleEdit}>
-                  <Edit />
-                </button>
-                <button
-                  aria-label="Details"
-                  title="Details"
-                  onClick={toggleDetails}
-                >
-                  {showDetails ? <Circle /> : <Info />}
-                </button>
-                {trade.status === 'planned' && (
-                  <button
-                    aria-label="Send to OKX"
-                    title="Send to OKX as a limit order with stop-loss"
-                    onClick={() => send(trade.id)}
-                    disabled={sending}
-                  >
-                    <Send />
-                  </button>
-                )}
-                {trade.status === 'live' && trade.okx_order && (
-                  <button
-                    aria-label="Cancel OKX order"
-                    title={`Cancel the OKX order (${trade.okx_order})`}
-                    onClick={() => cancel(trade.id)}
-                    disabled={sending}
-                  >
-                    <XOctagon />
-                  </button>
-                )}
-                <Link
-                  role="button"
-                  to="/trade/$id"
-                  params={{ id: trade.id }}
-                  aria-label="Open trade"
-                  title="Open trade"
-                >
-                  <ExternalLink />
-                </Link>
-                {/* <button aria-label="Delete" title="Delete" onClick={handleDelete}>
-              <Trash />
-              </button> */}
-              </>
-            )}
-          </div>
-        </th>
-      </tr>
-      {showDetails && (
-        <tr>
-          <td
-            colSpan={columns.length + 1}
-            className="text-left p-2 bg-highlight"
-          >
-            <TradeDocument
-              trade={tradeCombined}
-              editing={editing}
-              onChange={(journal) => handleChange('journal', journal)}
-            />
-          </td>
-        </tr>
-      )}
-    </>
+              )}
+              <Link
+                role="button"
+                to="/trade/$id"
+                params={{ id: trade.id }}
+                aria-label="Open trade"
+                title="Open trade"
+              >
+                <ExternalLink />
+              </Link>
+              {/* <button aria-label="Delete" title="Delete" onClick={handleDelete}>
+            <Trash />
+            </button> */}
+            </>
+          )}
+        </div>
+      </th>
+    </tr>
   );
 }
 
-const columns: {
+type TradeCellsProps = {
+  trade: TradesRow;
+  editing: boolean;
+  onChange: (key: keyof TradesRow, value: unknown) => void;
+  hide?: (keyof TradesRow)[];
+  // Center every cell instead of right-aligning the numbers.
+  center?: boolean;
+};
+
+// The column cells of one trade row, also used on the trade page.
+export function TradeCells({ trade, editing, onChange, hide = [], center = false }: TradeCellsProps) {
+  return tradeColumns.filter((col) => !hide.includes(col.key)).map((col) => {
+    const render = col.render ?? ((row: TradesRow) => row[col.key]);
+    return (
+      <th key={col.key} style={center ? { ...col.style, textAlign: 'center' } : col.style}>
+        {render(trade, editing, (value) => onChange(col.key, value))}
+      </th>
+    );
+  });
+}
+
+const tradeColumns: {
   label: string;
   key: keyof TradesRow;
   style?: CSSProperties;
