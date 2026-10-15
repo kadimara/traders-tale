@@ -31,8 +31,6 @@ Production PocketBase runs on a Raspberry Pi Zero W (`admin@pocketbase`, Raspbia
 - `npm run pb:snapshot` (`scripts/pb-snapshot.mjs`) creates a PocketBase backup on the live server via the API, downloads it as `pocketbase/snapshots/snapshot_<timestamp>.zip` and deletes it from the server. Needs `PB_PROD_EMAIL`/`PB_PROD_PASSWORD` (a live superuser) in `.env.local`; `PB_PROD_URL` defaults to `https://api.traders-tale.com`.
 - `npm run pb:restore` (`scripts/pb-restore.mjs`) replaces `pocketbase/pb_data` with the newest snapshot (or `npm run pb:restore -- <file>`), keeping the previous data in `pocketbase/pb_data.bak`, then adds a local superuser (`PB_LOCAL_EMAIL`/`PB_LOCAL_PASSWORD`, default `admin@local.test` / `12121212`). Stop the local PocketBase first. Users and live superusers come from the snapshot; OKX keys only decrypt with the Pi's `okx.key`, which is not in the snapshot.
 
-This branch is a trial of PocketBase as a Supabase replacement. Supabase leftovers (`SupabaseClient.ts`, `src/lib/types/database.types.ts`, the `supa-*` npm scripts, the `supabase/` folder and the `@supabase/supabase-js` dependency) are unused here and can be removed once PocketBase is adopted.
-
 ### Routing
 
 `@tanstack/react-router`, configured in `src/router.tsx` (served from the domain root). A pathless `layout` route wraps the authenticated pages (`/`, `/journal`, `/playbook`, `/trade/$id`) with `MonthProvider`, `TradesProvider` and `Layout`; `/auth` sits outside it. Use `Link`/`useNavigate` from TanStack Router.

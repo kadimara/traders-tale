@@ -11,12 +11,9 @@
     "preview": "vite preview",
     "deploy": "tsc -b && vite build && gh-pages -d dist",
     "pb:snapshot": "node --env-file-if-exists=.env.local scripts/pb-snapshot.mjs",
-    "pb:restore": "node --env-file-if-exists=.env.local scripts/pb-restore.mjs",
-    "supa-login": "supabase login",
-    "supa-gen-types": "supabase gen types typescript --project-id rhrbxtmqrpbnoyylgsyl --schema public > src/lib/types/database.types.ts"
+    "pb:restore": "node --env-file-if-exists=.env.local scripts/pb-restore.mjs"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.112.3",
     "@tanstack/react-router": "^1.170.29",
     "lightweight-charts": "^5.2.1",
     "pocketbase": "^0.28.1",
@@ -42,7 +39,6 @@
     "fflate": "^0.8.3",
     "gh-pages": "^6.3.0",
     "globals": "^17.11.0",
-    "supabase": "^2.114.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.67.0",
     "vite": "^8.2.1"
