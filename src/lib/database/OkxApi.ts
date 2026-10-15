@@ -22,6 +22,11 @@ export type OkxSyncResult = {
   creates: { date: string; symbol: string; long_short: string; instId: string; changes: SyncChanges }[];
 };
 
+/** Current OKX account equity in USD (including unrealized PnL). */
+export function okxBalance() {
+  return pb.send<{ totalEq: number }>('/api/okx/balance', { method: 'GET' });
+}
+
 /** Without `apply` this only reports what a sync would change. */
 export function okxSync(apply: boolean) {
   return pb.send<OkxSyncResult>('/api/okx/sync', { method: 'POST', body: { apply } });

@@ -24,6 +24,17 @@ onBootstrap((e) => {
   }
 });
 
+// The user's current OKX account equity in USD, used as the account of new trades.
+routerAdd(
+  'GET',
+  '/api/okx/balance',
+  (e) => {
+    const okx = require(`${__hooks}/okx_lib.js`);
+    return e.json(200, { totalEq: okx.accountEquity(okx.connectionFor($app, e.auth.id)) });
+  },
+  $apis.requireAuth('users'),
+);
+
 // Imports closed OKX positions into the user's trades. Without {"apply": true}
 // it only returns what would change, so the app can ask for confirmation first.
 routerAdd(
