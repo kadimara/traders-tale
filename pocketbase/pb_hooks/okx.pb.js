@@ -16,6 +16,11 @@ onRecordUpdate((e) => {
   e.next();
 }, 'okx_connections');
 
+// Every minute, move live trades to filled or canceled when their OKX order has.
+cronAdd('okx_live_orders', '* * * * *', () => {
+  require(`${__hooks}/okx_order.js`).refreshLive($app);
+});
+
 // Encrypt connections that were stored before encryption existed.
 onBootstrap((e) => {
   e.next();

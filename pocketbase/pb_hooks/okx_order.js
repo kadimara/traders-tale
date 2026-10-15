@@ -9,7 +9,8 @@
 // lots so the order never risks more than planned.
 // The order is stored on the trade as okx_order ("<instId>:<ordId>") and the
 // trade's status follows it: live while it waits, filled once a position is
-// open, canceled. The sync sets closed when the position closes.
+// open, canceled. refreshLive (a cron job in okx.pb.js) checks live orders every
+// minute; the sync sets closed when the position closes.
 
 const TD_MODE = 'isolated'; // margin mode; leverage is whatever is set on OKX for the instrument
 const ACTIVE_STATES = ['live', 'partially_filled', 'filled'];
@@ -179,4 +180,30 @@ function cancel(app, userId, tradeId) {
   return status;
 }
 
-module.exports = { plan, place, cancel, statusOf, fetchOrder };
+/**
+ * Moves every user's live trades to filled or canceled once their OKX order has.
+ * Read-only towards OKX. A user whose connection fails is skipped and logged, so
+ * one broken key doesn't stop the others.
+ */
+function refreshLive(app) {
+  const okx = require(`${__hooks}/okx_lib.js`);
+  const records = app.findRecordsByFilter('trades', "status = 'live' && okx_order != ''", '', 0, 0);
+  const byUser = {};
+  for (const r of records) (byUser[r.getString('user')] = byUser[r.getString('user')] || []).push(r);
+
+  for (const [userId, trades] of Object.entries(byUser)) {
+    try {
+      const conn = okx.connectionFor(app, userId);
+      for (const record of trades) {
+        const status = statusOf(fetchOrder(okx, conn, record.getString('okx_order')));
+        if (status === 'live') continue;
+        record.set('status', status);
+        app.save(record);
+      }
+    } catch (err) {
+      app.logger().warn('OKX live order check failed', 'user', userId, 'error', String(err));
+    }
+  }
+}
+
+module.exports = { plan, place, cancel, refreshLive, statusOf, fetchOrder };
