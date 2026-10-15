@@ -1,10 +1,11 @@
 import { useState, type CSSProperties, type ReactNode } from 'react';
-import { Circle, Download, DownloadCloud, Edit, ExternalLink, Info, Plus, Save, X } from 'react-feather';
+import { Circle, Download, DownloadCloud, Edit, ExternalLink, Info, Plus, Save, Send, X } from 'react-feather';
 import { Link } from '@tanstack/react-router';
 import { useTradesContext } from '../context/TradesContext';
 import { useMonthContext } from '../context/MonthContext';
 import { setLocalStorageItem, useLocalStorage } from '../hooks/useLocalStorage';
 import { useOkxSync } from '../hooks/useOkxSync';
+import { useOkxOrder } from '../hooks/useOkxOrder';
 import {
   TRADE_STATUSES,
   type TradeStatus,
@@ -105,6 +106,7 @@ export function TradesTable() {
 
 function Row({ trade }: { trade: TradesRow }) {
   const { updateTrade } = useTradesContext();
+  const { send, sending } = useOkxOrder();
   const [tradeLocal, setTradeLocal] =
     useLocalStorage<Partial<TradesRow> | null>(`trade${trade.id}`, null);
   const tradeCombined = { ...trade, ...tradeLocal };
@@ -183,7 +185,7 @@ function Row({ trade }: { trade: TradesRow }) {
             </th>
           );
         })}
-        <th style={{ justifyItems: 'center', width: 100 }}>
+        <th style={{ justifyItems: 'center', width: 130 }}>
           <div className="flex gap-1">
             {editing ? (
               <>
@@ -210,6 +212,21 @@ function Row({ trade }: { trade: TradesRow }) {
                 >
                   {showDetails ? <Circle /> : <Info />}
                 </button>
+                {trade.status === 'planned' && (
+                  <button
+                    aria-label="Send to OKX"
+                    title={
+                      trade.okx_order
+                        ? `Sent to OKX (${trade.okx_order}); sends again only if that order was cancelled`
+                        : 'Send to OKX as a limit order with stop-loss'
+                    }
+                    onClick={() => send(trade.id)}
+                    disabled={sending}
+                    style={{ color: trade.okx_order ? 'var(--color-main)' : undefined }}
+                  >
+                    <Send />
+                  </button>
+                )}
                 <Link
                   role="button"
                   to="/trade/$id"

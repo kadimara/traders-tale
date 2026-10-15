@@ -7,7 +7,9 @@
 // direction, was created within MATCH_WINDOW_MS of the position opening, and its
 // entry is within MATCH_PRICE of OKX's average open price. Pairs are assigned
 // best-first (closest price and time), so an exact match is never taken by a
-// neighbouring position.
+// neighbouring position. A trade placed as an OKX order (okx_order) matches a
+// position on that instrument opened any time after the trade, not only within
+// the window.
 // Synced trades store okx_pos_key, so a position is never imported twice.
 
 const MATCH_WINDOW_MS = 36 * 3600 * 1000;
@@ -68,7 +70,9 @@ function plan(app, userId) {
       if (r.getString('okx_pos_key')) continue;
       if (r.getString('symbol').trim().toUpperCase() !== item.symbol) continue;
       if (r.getString('long_short') !== item.direction) continue;
-      const timeDiff = Math.abs(timeOf(r) - item.openTime);
+      // A trade sent to OKX as an order may fill any time after it was planned.
+      const ordered = r.getString('okx_order').split(':')[0] === item.p.instId && item.openTime >= timeOf(r);
+      const timeDiff = ordered ? 0 : Math.abs(timeOf(r) - item.openTime);
       const entry = r.getFloat('entry');
       if (timeDiff > MATCH_WINDOW_MS || !(entry > 0)) continue;
       const priceDiff = Math.abs(entry / item.fields.entry - 1);

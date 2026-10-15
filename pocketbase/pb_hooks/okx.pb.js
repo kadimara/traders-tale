@@ -1,7 +1,8 @@
 /// <reference path="../pb_data/types.d.ts" />
 
-// OKX integration (read-only towards OKX). Each logged-in user works with their
-// own OKX connection from the okx_connections collection (see okx_lib.js).
+// OKX integration. Each logged-in user works with their own OKX connection from
+// the okx_connections collection (see okx_lib.js). Only /api/okx/order writes to
+// OKX; everything else reads.
 
 // Encrypt the API key, secret and passphrase whenever a connection is saved,
 // including when a superuser types them into the dashboard.
@@ -46,6 +47,27 @@ routerAdd(
     const result = sync.plan($app, e.auth.id);
     if (body.apply === true) sync.apply($app, e.auth.id, result);
     return e.json(200, { applied: body.apply === true, ...result });
+  },
+  $apis.requireAuth('users'),
+);
+
+// Sends a planned trade to OKX as a limit order with an attached stop-loss (see
+// okx_order.js). Without {"apply": true} it only returns the order it would place;
+// with it, the body must repeat the previewed price and size, so the order placed
+// is the one that was confirmed.
+routerAdd(
+  'POST',
+  '/api/okx/order',
+  (e) => {
+    const okxOrder = require(`${__hooks}/okx_order.js`);
+    const body = e.requestInfo().body || {};
+    const result = okxOrder.plan($app, e.auth.id, String(body.tradeId || ''));
+    if (body.apply !== true) return e.json(200, { placed: false, ...result });
+    if (body.px !== result.order.px || body.sz !== result.order.sz) {
+      throw new BadRequestError('The trade changed since the preview; send it again.');
+    }
+    const ordId = okxOrder.place($app, e.auth.id, result);
+    return e.json(200, { placed: true, ordId, ...result });
   },
   $apis.requireAuth('users'),
 );

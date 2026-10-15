@@ -21,14 +21,16 @@ export type TradesRow = {
   journal: string | null;
   playbook: boolean;
   status: TradeStatus;
+  /** "<instId>:<ordId>" of the OKX order placed for this trade; set by the server only. */
+  okx_order: string | null;
 };
 
 export type TradesInsert = Omit<
   TradesRow,
-  'id' | 'user' | 'created_at' | 'status' | 'playbook' | 'exit' | 'fees' | 'risk' | 'pnl' | 'journal'
+  'id' | 'user' | 'created_at' | 'status' | 'playbook' | 'exit' | 'fees' | 'risk' | 'pnl' | 'journal' | 'okx_order'
 > &
   Partial<Pick<TradesRow, 'created_at' | 'status' | 'playbook' | 'exit' | 'fees' | 'risk' | 'pnl' | 'journal'>>;
-export type TradesUpdate = Partial<Omit<TradesRow, 'id' | 'user'>>;
+export type TradesUpdate = Partial<Omit<TradesRow, 'id' | 'user' | 'okx_order'>>;
 
 const trades = () => pb.collection('trades');
 
@@ -55,6 +57,7 @@ function toRow(record: RecordModel): TradesRow {
     journal: record.journal || null,
     playbook: record.playbook,
     status: record.status,
+    okx_order: record.okx_order || null,
   };
 }
 
