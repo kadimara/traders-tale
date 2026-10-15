@@ -1,8 +1,9 @@
 import { pb } from './PocketBaseClient';
+import type { TradeStatus } from './TradesApi';
 
 // Client for the OKX routes in pocketbase/pb_hooks/okx.pb.js. Each user's OKX
-// keys live in the okx_connections collection on the server. Only okxOrder
-// writes to OKX.
+// keys live in the okx_connections collection on the server. Only okxOrder and
+// okxCancel write to OKX.
 
 type SyncChanges = { entry: number; exit: number; amount: number; fees: number; pnl: number };
 
@@ -21,6 +22,7 @@ export type OkxSyncResult = {
     changes: SyncChanges;
   }[];
   creates: { date: string; symbol: string; long_short: string; instId: string; changes: SyncChanges }[];
+  orders: { tradeId: string; date: string; symbol: string; long_short: string; statusBefore: string; status: TradeStatus }[];
 };
 
 /** Current OKX account equity in USD (including unrealized PnL). */
@@ -62,4 +64,9 @@ export function okxOrder(tradeId: string, confirmed?: OkxOrderResult['order']) {
     method: 'POST',
     body: confirmed ? { tradeId, apply: true, px: confirmed.px, sz: confirmed.sz } : { tradeId },
   });
+}
+
+/** Cancels the OKX order of a live trade; returns the trade's new status (canceled, or filled when too late). */
+export function okxCancel(tradeId: string) {
+  return pb.send<{ status: TradeStatus }>('/api/okx/cancel', { method: 'POST', body: { tradeId } });
 }

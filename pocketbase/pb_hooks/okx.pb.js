@@ -1,8 +1,8 @@
 /// <reference path="../pb_data/types.d.ts" />
 
 // OKX integration. Each logged-in user works with their own OKX connection from
-// the okx_connections collection (see okx_lib.js). Only /api/okx/order writes to
-// OKX; everything else reads.
+// the okx_connections collection (see okx_lib.js). Only /api/okx/order and
+// /api/okx/cancel write to OKX; everything else reads.
 
 // Encrypt the API key, secret and passphrase whenever a connection is saved,
 // including when a superuser types them into the dashboard.
@@ -68,6 +68,18 @@ routerAdd(
     }
     const ordId = okxOrder.place($app, e.auth.id, result);
     return e.json(200, { placed: true, ordId, ...result });
+  },
+  $apis.requireAuth('users'),
+);
+
+// Cancels the OKX order of a live trade and returns the trade's new status.
+routerAdd(
+  'POST',
+  '/api/okx/cancel',
+  (e) => {
+    const okxOrder = require(`${__hooks}/okx_order.js`);
+    const body = e.requestInfo().body || {};
+    return e.json(200, { status: okxOrder.cancel($app, e.auth.id, String(body.tradeId || '')) });
   },
   $apis.requireAuth('users'),
 );

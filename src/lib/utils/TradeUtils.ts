@@ -21,9 +21,9 @@ export function usdToContracts(amount: number, contractSize: number, entry: numb
   return entry ? Math.round(amount / (contractSize * entry)) : 0;
 }
 
-// Account balance after a trade: only taken trades have realized their PnL
+// Account balance after a trade: only closed trades have realized their PnL
 export function getAccountAfterTrade(trade: TradesRow) {
-  return round(trade.account + (trade.status === 'taken' ? (trade.pnl ?? 0) : 0), 2);
+  return round(trade.account + (trade.status === 'closed' ? (trade.pnl ?? 0) : 0), 2);
 }
 
 export const DEFAULT_RISK = 0.018;

@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { okxOrder, type OkxOrderResult } from '@lib/database/OkxApi';
+import { okxCancel, okxOrder, type OkxOrderResult } from '@lib/database/OkxApi';
 import { useTradesContext } from '@lib/context/TradesContext';
 
-// Sends a planned trade to OKX as a limit order with its stop-loss: previews the
-// order, asks for confirmation, places it and reloads the trades. Used by the
-// trades table rows.
+// Sends a planned trade to OKX as a limit order with its stop-loss (preview,
+// confirm, place, reload; the trade becomes live), or cancels a live trade's
+// order. Used by the trades table rows.
 export function useOkxOrder() {
   const { reloadTrades } = useTradesContext();
   const [sending, setSending] = useState(false);
@@ -24,7 +24,20 @@ export function useOkxOrder() {
     setSending(false);
   };
 
-  return { send, sending };
+  const cancel = async (tradeId: string) => {
+    if (!confirm('Cancel this order on OKX? Its stop-loss is cancelled with it.')) return;
+    setSending(true);
+    try {
+      const { status } = await okxCancel(tradeId);
+      await reloadTrades();
+      if (status === 'filled') alert('The order already filled, so the position is open. The trade is now filled.');
+    } catch (err) {
+      alert(err instanceof Error ? err.message : String(err));
+    }
+    setSending(false);
+  };
+
+  return { send, cancel, sending };
 }
 
 function orderSummary({ order, long_short, contracts, sizeUsd, riskUsd, lastPx, previousOrderState }: OkxOrderResult) {

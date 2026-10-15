@@ -107,7 +107,7 @@ export default function Trade() {
             <th>
               <span
                 className={
-                  trade.status === 'taken' ? 'number' + Math.sign(trade.pnl ?? 0) : ''
+                  trade.status === 'closed' ? 'number' + Math.sign(trade.pnl ?? 0) : ''
                 }
               >
                 {toUSD(trade.pnl) ?? '—'}

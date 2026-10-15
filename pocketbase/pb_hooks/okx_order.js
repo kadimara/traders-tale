@@ -7,11 +7,19 @@
 // The size comes from the trade's amount (USD) and entry, like the contracts shown
 // in the app, with the instrument's real contract value, rounded down to whole
 // lots so the order never risks more than planned.
-// The order is stored on the trade as okx_order ("<instId>:<ordId>"), so a trade
-// is only sent again once its previous order was cancelled.
+// The order is stored on the trade as okx_order ("<instId>:<ordId>") and the
+// trade's status follows it: live while it waits, filled once a position is
+// open, canceled. The sync sets closed when the position closes.
 
 const TD_MODE = 'isolated'; // margin mode; leverage is whatever is set on OKX for the instrument
 const ACTIVE_STATES = ['live', 'partially_filled', 'filled'];
+
+/** OKX order -> trade status. A partly filled order that was cancelled still opened a position. */
+function statusOf(order) {
+  if (order.state === 'live' || order.state === 'partially_filled') return 'live';
+  if (order.state === 'filled' || Number(order.accFillSz) > 0) return 'filled';
+  return 'canceled';
+}
 
 /** Decimal places of an OKX step such as "0.1" or "0.00001". */
 const decimalsOf = (step) => (String(step).split('.')[1] || '').length;
@@ -32,9 +40,8 @@ function instrumentFor(okx, symbol) {
   return live[0];
 }
 
-/** The state of the order already placed for a trade, or null. */
-function existingOrderState(okx, conn, okxOrder) {
-  if (!okxOrder) return null;
+/** The OKX order of an okx_order value ("<instId>:<ordId>"). */
+function fetchOrder(okx, conn, okxOrder) {
   const [instId, ordId] = okxOrder.split(':');
   const data = okx.request(
     conn,
@@ -43,14 +50,11 @@ function existingOrderState(okx, conn, okxOrder) {
     null,
     true,
   );
-  return data[0].state;
+  return data[0];
 }
 
-/** Works out the order for a trade without placing it. */
-function plan(app, userId, tradeId) {
-  const okx = require(`${__hooks}/okx_lib.js`);
-  const conn = okx.connectionFor(app, userId);
-
+/** The user's trade, or a 404. */
+function findTrade(app, userId, tradeId) {
   let record;
   try {
     record = app.findRecordById('trades', tradeId);
@@ -58,6 +62,15 @@ function plan(app, userId, tradeId) {
     throw new NotFoundError('Trade not found.');
   }
   if (record.getString('user') !== userId) throw new NotFoundError('Trade not found.');
+  return record;
+}
+
+/** Works out the order for a trade without placing it. */
+function plan(app, userId, tradeId) {
+  const okx = require(`${__hooks}/okx_lib.js`);
+  const conn = okx.connectionFor(app, userId);
+
+  const record = findTrade(app, userId, tradeId);
   if (record.getString('status') !== 'planned') throw new BadRequestError('Only planned trades can be sent to OKX.');
 
   const symbol = record.getString('symbol').trim().toUpperCase();
@@ -72,7 +85,9 @@ function plan(app, userId, tradeId) {
     throw new BadRequestError('The SL must be ' + (long ? 'below' : 'above') + ' the entry.');
   }
 
-  const existingState = existingOrderState(okx, conn, record.getString('okx_order'));
+  const existingState = record.getString('okx_order')
+    ? fetchOrder(okx, conn, record.getString('okx_order')).state
+    : null;
   if (existingState && ACTIVE_STATES.includes(existingState)) {
     throw new BadRequestError('This trade already has an OKX order (' + existingState + ').');
   }
@@ -121,15 +136,47 @@ function plan(app, userId, tradeId) {
   };
 }
 
-/** Places a planned order on OKX and links it to the trade. */
+/** Places a planned order on OKX, links it to the trade and makes the trade live. */
 function place(app, userId, result) {
   const okx = require(`${__hooks}/okx_lib.js`);
   const conn = okx.connectionFor(app, userId);
   const ordId = okx.request(conn, 'POST', '/api/v5/trade/order', result.order, true)[0].ordId;
   const record = app.findRecordById('trades', result.tradeId);
   record.set('okx_order', result.order.instId + ':' + ordId);
+  record.set('status', 'live');
   app.save(record);
   return ordId;
 }
 
-module.exports = { plan, place };
+/**
+ * Cancels a live trade's order (OKX cancels the attached stop-loss with it) and
+ * sets the trade's status to the order's state afterwards: canceled, or filled
+ * when it filled before the cancel arrived.
+ */
+function cancel(app, userId, tradeId) {
+  const okx = require(`${__hooks}/okx_lib.js`);
+  const conn = okx.connectionFor(app, userId);
+  const record = findTrade(app, userId, tradeId);
+  const okxOrder = record.getString('okx_order');
+  if (!okxOrder || record.getString('status') !== 'live') {
+    throw new BadRequestError('Only live trades have an OKX order to cancel.');
+  }
+
+  const [instId, ordId] = okxOrder.split(':');
+  let cancelError = null;
+  try {
+    okx.request(conn, 'POST', '/api/v5/trade/cancel-order', { instId, ordId }, true);
+  } catch (err) {
+    cancelError = err; // e.g. already filled or cancelled on OKX; the state below tells
+  }
+  let status = statusOf(fetchOrder(okx, conn, okxOrder));
+  if (status === 'live') {
+    if (cancelError) throw cancelError;
+    status = 'canceled'; // accepted, but OKX may still report it as live for a moment
+  }
+  record.set('status', status);
+  app.save(record);
+  return status;
+}
+
+module.exports = { plan, place, cancel, statusOf, fetchOrder };
