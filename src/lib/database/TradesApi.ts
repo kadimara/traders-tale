@@ -1,9 +1,9 @@
 import type { RecordModel } from 'pocketbase';
 import { currentUserId, pb } from './PocketBaseClient';
 
-// planned -> live (order on OKX) -> filled (position open) -> closed, or canceled;
-// missed for setups that weren't taken.
-export const TRADE_STATUSES = ['planned', 'live', 'filled', 'canceled', 'closed', 'missed'] as const;
+// planned -> live (order on OKX) -> filled (position open) -> closed, or canceled
+// (order cancelled, or a setup that wasn't taken).
+export const TRADE_STATUSES = ['planned', 'live', 'filled', 'canceled', 'closed'] as const;
 export type TradeStatus = (typeof TRADE_STATUSES)[number];
 
 export type TradesRow = {

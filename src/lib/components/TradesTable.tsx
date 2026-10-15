@@ -169,7 +169,7 @@ function Row({ trade }: { trade: TradesRow }) {
         style={{
           background: showDetails ? 'var(--color-bg-highlight)' : undefined,
           borderBottomColor: showDetails ? 'transparent' : undefined,
-          color: (trade.status === 'missed' || trade.status === 'canceled') && !editing ? 'gray' : undefined,
+          color: trade.status === 'canceled' && !editing ? 'gray' : undefined,
           boxShadow:
             trade.status === 'planned' || trade.status === 'live' ? 'inset 3px 0 0 var(--color-main)' : undefined,
         }}
