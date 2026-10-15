@@ -27,4 +27,6 @@ dist-ssr
 pocketbase/pocketbase.exe
 pocketbase/pocketbase
 pocketbase/pb_data
+pocketbase/pb_data.bak
+pocketbase/snapshots
 pocketbase/okx.key
