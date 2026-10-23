@@ -117,6 +117,15 @@ export async function tradesDelete(id: string) {
   await trades().delete(id);
 }
 
+/** Planned trades and trades with an open order on OKX, newest first. */
+export async function tradesSelectPlanned() {
+  const records = await trades().getFullList({
+    filter: "status = 'planned' || status = 'live'",
+    sort: '-created_at',
+  });
+  return records.map(toRow);
+}
+
 export async function tradesSelectPlaybook() {
   const records = await trades().getFullList({
     filter: 'playbook = true',
