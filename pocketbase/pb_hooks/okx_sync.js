@@ -97,7 +97,7 @@ function plan(app, userId) {
     if (best) {
       const stop = best.getFloat('stop');
       const account = best.getFloat('account');
-      const changes = { ...fields, okx_pos_key: posKey };
+      const changes = { ...fields, okx_pos_key: posKey, created_at: new Date(openTime).toISOString() };
       if (stop > 0 && account > 0) {
         changes.risk = round((fields.amount / account) * Math.abs(stop / fields.entry - 1), 4);
       }
@@ -138,7 +138,7 @@ function plan(app, userId) {
     .map((r) => {
       const update = updates.find((u) => u.tradeId === r.id);
       return {
-        time: timeOf(r),
+        time: update ? Date.parse(update.changes.created_at) : timeOf(r),
         account: r.getFloat('account'),
         status: update ? 'closed' : r.getString('status'),
         pnl: update ? update.changes.pnl : r.getFloat('pnl'),
