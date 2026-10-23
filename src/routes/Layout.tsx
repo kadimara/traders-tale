@@ -26,12 +26,12 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
           JOURNAL
         </Link>
         <Link
-          to="/playbook"
+          to="/plan"
           activeProps={{
             style: { color: 'var(--color-text)', textDecoration: 'underline' },
           }}
         >
-          PLAYBOOK
+          PLAN
         </Link>
         {/* <a>PROFILE</a> */}
         <span className="flex-1" />

@@ -60,3 +60,72 @@
   min-height: 200px;
   width: 100%;
 }
+
+/* Markdown editor: a textarea with transparent text over a highlighted copy
+   of it. Both lay out the text the same way, so the highlighting may only
+   change colors, never the font's size, weight or style. */
+.markdown-editor {
+  position: relative;
+}
+.markdown-editor textarea,
+.markdown-editor-highlight {
+  margin: 0;
+  width: 100%;
+  padding: 4px;
+  border: 0.1rem solid transparent;
+  font: inherit;
+  letter-spacing: inherit;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+.markdown-editor textarea {
+  position: relative;
+  display: block;
+  resize: none;
+  overflow: hidden;
+  color: transparent;
+  caret-color: var(--color-text);
+  border-color: var(--color-border);
+}
+.markdown-editor textarea:focus {
+  border-color: var(--color-main);
+}
+.markdown-editor textarea::placeholder {
+  color: var(--color-text-highlight);
+}
+.markdown-editor-highlight {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  color: var(--color-text);
+}
+.md-mark,
+.md-quote {
+  color: var(--color-text-highlight);
+}
+.md-heading {
+  color: var(--color-main);
+}
+/* Bold without a wider font: a thin shadow thickens the letters. */
+.md-heading,
+.md-bold {
+  text-shadow: 0.4px 0 0 currentColor;
+}
+/* No real italics: slanted letters have other widths. */
+.md-italic {
+  color: color-mix(in srgb, var(--color-main) 70%, var(--color-text));
+}
+.md-link {
+  color: var(--color-main);
+  text-decoration: underline;
+}
+.md-code {
+  background: var(--color-bg);
+  border-radius: var(--border-radius);
+}
+.md-placeholder {
+  color: var(--color-main);
+  background: color-mix(in srgb, var(--color-main) 15%, transparent);
+  border-radius: var(--border-radius);
+}

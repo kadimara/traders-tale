@@ -3,7 +3,7 @@ import { Download, DownloadCloud, Edit, ExternalLink, Plus, Save, Send, X, XOcta
 import { Link } from '@tanstack/react-router';
 import { useTradesContext } from '../context/TradesContext';
 import { useMonthContext } from '../context/MonthContext';
-import { setLocalStorageItem } from '../hooks/useLocalStorage';
+import { useNewTrade } from '../hooks/useNewTrade';
 import { useOkxSync } from '../hooks/useOkxSync';
 import { useOkxOrder } from '../hooks/useOkxOrder';
 import { useTradeEdit } from '../hooks/useTradeEdit';
@@ -14,45 +14,21 @@ import {
 } from '@lib/database/TradesApi';
 import { formatDateTime, toDateTimeLocalInput } from '@lib/utils/DateUtils';
 import { toUSD } from '@lib/utils/MathUtils';
-import { okxBalance } from '@lib/database/OkxApi';
 import {
   contractsToUsd,
   exportTradesToCsv,
   formatTradeSize,
-  getAccountAfterTrade,
   getContractSize,
   usdToContracts,
 } from '@lib/utils/TradeUtils';
-// Default journal for new trades. Edit the .md file to change it.
-import tradePlanTemplate from '@lib/templates/TradePlan.md?raw';
 import { Input } from './Input';
 import { InputNumber } from './InputNumber';
 
 export function TradesTable() {
-  const { trades, insertTrade } = useTradesContext();
+  const { trades } = useTradesContext();
   const { monthKey } = useMonthContext();
   const { sync, syncing } = useOkxSync();
-
-  const handleAddTrade = async () => {
-    // Trades are sorted newest first
-    const prev = trades[0];
-    // The live OKX balance; without a working OKX connection, carry the account forward.
-    const account = await okxBalance().then(
-      ({ totalEq }) => totalEq,
-      () => (prev ? getAccountAfterTrade(prev) : 0),
-    );
-    const trade = await insertTrade({
-      account,
-      amount: 0,
-      entry: 0,
-      journal: tradePlanTemplate,
-      long_short: 'long',
-      stop: 0,
-      status: 'planned',
-      symbol: 'BTC',
-    });
-    setLocalStorageItem(`trade${trade.id}`, {});
-  };
+  const handleAddTrade = useNewTrade();
 
   return (
     <>

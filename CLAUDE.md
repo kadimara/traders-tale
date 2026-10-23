@@ -33,7 +33,7 @@ Production PocketBase runs on a Raspberry Pi Zero W (`admin@pocketbase`, Raspbia
 
 ### Routing
 
-`@tanstack/react-router`, configured in `src/router.tsx` (served from the domain root). A pathless `layout` route wraps the authenticated pages (`/`, `/journal`, `/playbook`, `/trade/$id`) with `MonthProvider`, `TradesProvider` and `Layout`; `/auth` sits outside it. Use `Link`/`useNavigate` from TanStack Router.
+`@tanstack/react-router`, configured in `src/router.tsx` (served from the domain root). A pathless `layout` route wraps the authenticated pages (`/`, `/journal`, `/playbook`, `/plan`, `/trade/$id`) with `MonthProvider`, `TradesProvider` and `Layout`; `/auth` sits outside it. Use `Link`/`useNavigate` from TanStack Router.
 
 ### Context hierarchy
 
@@ -41,7 +41,7 @@ Production PocketBase runs on a Raspberry Pi Zero W (`admin@pocketbase`, Raspbia
 SessionProvider (App.tsx)  → PocketBase auth (pb.authStore); redirects to /auth when logged out
   RouterProvider
     layout route           → MonthProvider → TradesProvider → Layout
-      Home / Journal / Playbook / Trade
+      Home / Journal / Playbook / Plan / Trade
 ```
 
 - **`monthKey`** is the canonical month identifier: `"YYYY-MM-01"` string. It is the `month_year` field value and used as a date range filter on `created_at`.

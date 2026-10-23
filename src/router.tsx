@@ -11,6 +11,7 @@ import Auth from './routes/Auth';
 import Home from './routes/Home';
 import Journal from './routes/Journal';
 import Playbook from './routes/Playbook';
+import Plan from './routes/Plan';
 import Trade from './routes/Trade';
 
 const rootRoute = createRootRoute({
@@ -56,6 +57,12 @@ const playbookRoute = createRoute({
   component: Playbook,
 });
 
+const planRoute = createRoute({
+  getParentRoute: () => layoutRoute,
+  path: '/plan',
+  component: Plan,
+});
+
 const tradeRoute = createRoute({
   getParentRoute: () => layoutRoute,
   path: '/trade/$id',
@@ -65,7 +72,7 @@ const tradeRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   authRoute,
   tradeRoute,
-  layoutRoute.addChildren([homeRoute, journalRoute, playbookRoute, tradeRoute]),
+  layoutRoute.addChildren([homeRoute, journalRoute, playbookRoute, planRoute, tradeRoute]),
 ]);
 
 export const router = createRouter({

@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { getImageSrcFromTradingViewUrl } from '@lib/utils/TradeUtils';
+import { MarkdownHighlight } from './MarkdownHighlight';
 
 const markdownComponents: React.ComponentProps<
   typeof ReactMarkdown
@@ -48,6 +49,9 @@ const markdownComponents: React.ComponentProps<
     );
   },
 };
+
+// Ctrl/Cmd + key → markdown marker: bold, italic, inline code.
+const SHORTCUT_MARKERS: Record<string, string | undefined> = { b: '**', i: '*', e: '`' };
 
 type Placeholder = { start: number; end: number };
 
@@ -173,6 +177,40 @@ export function MarkdownField({
     return true;
   };
 
+  const replaceText = (next: string, start: number, end: number) => {
+    activeChoiceRef.current = null;
+    pushHistory(next, end);
+    pendingSelectionRef.current = { start, end };
+    onChange?.(next);
+  };
+
+  // Ctrl+B / I / E: wraps the selection in the marker, or unwraps it.
+  const toggleMarker = (el: HTMLTextAreaElement, marker: string) => {
+    const { selectionStart: start, selectionEnd: end, value: text } = el;
+    const size = marker.length;
+    const wrapped =
+      text.slice(start - size, start) === marker &&
+      text.slice(end, end + size) === marker &&
+      // Italic inside bold (**text**) is not wrapped in italic yet.
+      !(marker === '*' && text[start - 2] === '*' && text[end + 1] === '*');
+    if (wrapped) {
+      const next = text.slice(0, start - size) + text.slice(start, end) + text.slice(end + size);
+      replaceText(next, start - size, end - size);
+    } else {
+      const next = text.slice(0, start) + marker + text.slice(start, end) + marker + text.slice(end);
+      replaceText(next, start + size, end + size);
+    }
+  };
+
+  // Ctrl+K: turns the selection into a link and selects its `url` to paste over.
+  const insertLink = (el: HTMLTextAreaElement) => {
+    const { selectionStart: start, selectionEnd: end, value: text } = el;
+    const label = text.slice(start, end) || 'text';
+    const link = `[${label}](url)`;
+    const urlStart = start + label.length + 3;
+    replaceText(text.slice(0, start) + link + text.slice(end), urlStart, urlStart + 3);
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     activeChoiceRef.current = null;
     pushHistory(e.target.value, e.target.selectionStart);
@@ -182,7 +220,14 @@ export function MarkdownField({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     const ctrl = e.ctrlKey || e.metaKey;
     const el = e.currentTarget;
-    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+    const marker = ctrl && !e.shiftKey && !e.altKey ? SHORTCUT_MARKERS[e.key] : undefined;
+    if (marker) {
+      e.preventDefault();
+      toggleMarker(el, marker);
+    } else if (ctrl && !e.shiftKey && !e.altKey && e.key === 'k') {
+      e.preventDefault();
+      insertLink(el);
+    } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
       if (cycleChoice(el, e.key === 'ArrowDown' ? 1 : -1)) e.preventDefault();
     } else if (e.key === 'Tab' && !ctrl && !e.altKey) {
       if (jumpToPlaceholder(el, e.shiftKey)) e.preventDefault();
@@ -239,24 +284,22 @@ export function MarkdownField({
   };
 
   if (editing) {
+    // The textarea's text is transparent; the highlighted copy behind it shows through.
     return (
-      <textarea
-        ref={textareaRef}
-        value={value || ''}
-        placeholder={placeholder}
-        onChange={handleChange}
-        onKeyDown={handleKeyDown}
-        onPaste={handlePaste}
-        onClick={handleClick}
-        style={{
-          width: '100%',
-          fontFamily: 'inherit',
-          padding: 4,
-          resize: 'none',
-          lineHeight: 1.6,
-          overflow: 'hidden',
-        }}
-      />
+      <div className="markdown-editor">
+        <div className="markdown-editor-highlight" aria-hidden>
+          <MarkdownHighlight text={value || ''} />
+        </div>
+        <textarea
+          ref={textareaRef}
+          value={value || ''}
+          placeholder={placeholder}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          onPaste={handlePaste}
+          onClick={handleClick}
+        />
+      </div>
     );
   }
 
