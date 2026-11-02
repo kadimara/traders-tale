@@ -1,63 +1,73 @@
-# BTC Trading Plan
+# BTC Trade Plan
 
-Structure rule: HH/HL = up, LH/LL = down. A swing needs 2 candles on each side. Hourly = the 1h, 2h or 4h. Pick one per trade and use it for entry, trailing and invalidation.
+Date: · Session / Timeframe:
 
-## Big Picture / Bias
+## Big Picture
 
-Daily structure. Up = +1, down = −1. DXY is reversed.
+Sets the big-picture bias. Update weekly (e.g. Sunday after the weekly close). Score each [+1 | 0 | −1].
 
-- SPX: [up → +1 / down → −1]
-- Gold: [up → +1 / down → −1]
-- DXY: [up → −1 / down → +1]
-- BTC: [up → +1 / down → −1]
+- Weekly market structure: [HH/HL | LH/LL | Range] — Score:
+- 200 DMA: Price [Above | Below] — Slope [Rising | Falling] — Score:
+- DXY: Trending [Up | Down] — [Above | Below] key level — Score:
+- ETF inflows: Net [Inflow | Outflow] over the last 5 days — Score:
+- Fear & Greed: [Extreme fear (below 30) | Neutral | Extreme greed (above 70)] — Score:
 
-Bias score: [score] → +2 or more = long · −2 or less = short · 0 = no with-trend trade
+## Calendar
 
-## Intraday Fundamentals
-
-- ETF flow yesterday: [inflow / outflow] [$M] ([farside](https://farside.co.uk/btc/))
-- Events today: [none / event, date, time]
-- High-impact (CPI, PPI, FOMC, NFP, PCE): no entries 1h before to 30min after
+High-impact events this week. Avoid opening new trades in the 30–60 min before a release.
 
 ## Technical Analysis
 
-- Nearest weekly support / resistance: [level] → [clear / near (within 1 daily ATR)]
-- Weekly structure: [up / down / reversing]
-- Daily structure: internal [up / down], external [up / down]
-- 2-week SMA: sloping [up / down / flat]
-- AVWAP from [anchor]: acting as [support / resistance]
+- Daily structure: [Bullish | Bearish | Range]
+- Hourly structure: [Bullish | Bearish | Range]
+- Hourly vs daily: [Aligned | Against]
+- AVWAP anchor: [Swing low | Swing high | Weekly open | Monthly open | News event]
+- Price vs AVWAP: [Above | Below | Reclaiming | Losing]
 
 ## Setup
 
-- Direction: [long / short] · Type: [with / against] · Timeframe: [1h / 2h / 4h]
-- Entry: body [open / close] at hourly level [price]
-- Stop: 0.1% beyond the wick [price]
-- Target: [price] · R:R [R:R] (minimum 2R)
+- Direction: [Long | Short] (must match bias, or be a valid counter-trend B-setup)
+- Setup type: [Pullback to level | Breakout & retest | Range reversal | AVWAP reclaim]
+- Entry: Price and trigger (e.g. hourly close back above level)
+- Stop: [Below | Above] the structure that invalidates the idea, not a fixed %
+
+Invalidation in one sentence: "This idea is wrong if…"
 
 ## Management
 
-- At +2R → stop to breakeven
-- Trail 0.1% beyond each new hourly swing
-- Exit early if an hourly candle closes back through the setup level
+Decide before entry. Never widen the stop.
+
+- Stop to break-even: [At 1R | After new hourly swing | At Target 1]
+- Trail stop: [Hourly swings | AVWAP | No trail]
+- Take profit: [All at T1 | 50% at T1, rest at T2 | Trail the rest]
+- Exit early if: [Daily structure breaks | Time stop hit | High-impact event ahead]
 
 ## Grade
 
-1 point each.
+- [ ] Matches Big Picture bias
+- [ ] Daily and hourly structure aligned
+- [ ] AVWAP confluence
 
-- [ ] Bias fits the trade (with: score ±2 and BTC agrees · against: score no more than 1 point against)
-- [ ] Hourly structure fits (with: agrees with daily · against: has flipped)
-- [ ] No key level against the trade (weekly S/R or AVWAP) · against: price is at a weekly level
-- [ ] No high-impact news in the blackout window
-- [ ] R:R ≥ 2
+Score: ___ / 3 → Grade: [A+ | B | C]
 
-With the trend: 5–4 = A/B full size · 3 = C half size · ≤2 = skip
-Against the trend: 5–4 = take it · ≤3 = skip
-
-Grade: [A/B/C/D]
+- A+ (3): Full size
+- B (2): Half size
+- C (1 or less): No trade
 
 ## Review
 
-- Result: [±R]
-- Price 12h after exit: [continued / reversed]
-- Followed the plan? [Y / N] → if N, which rule and why: [rule, why]
-- Execution grade: [A = all rules / B = minor slip / C = major slip / D = off-plan]
+### Process
+
+- Did I follow the plan from entry to exit? [Yes | No]
+- Did I move my stop or exit early for an emotional reason?
+- Was the bias correct? Was the setup correct?
+
+### Lessons
+
+- What went well:
+- What to improve:
+- One rule to add, change or remove:
+
+Execution score (1–5):
+
+Grade the process, not the outcome. A well-executed losing trade is a good trade; a rule-breaking winner is a bad one.
