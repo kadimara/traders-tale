@@ -55,7 +55,7 @@ const SHORTCUT_MARKERS: Record<string, string | undefined> = { b: '**', i: '*', 
 
 type Placeholder = { start: number; end: number };
 
-// `[...]` placeholders in the text, e.g. `[up / down]` or `[price]`. Links
+// `[...]` placeholders in the text, e.g. `[Up | Down]` or `[price]`. Links
 // (`[text](url)`) and task checkboxes (`- [ ]`) are not placeholders.
 function findPlaceholders(text: string): Placeholder[] {
   const found: Placeholder[] = [];
@@ -85,8 +85,8 @@ type ActiveChoice = {
 function toActiveChoice(text: string, { start, end }: Placeholder): ActiveChoice {
   const original = text.slice(start, end);
   const inner = original.slice(1, -1);
-  const options = inner.includes('/')
-    ? inner.split('/').map((option) => option.trim())
+  const options = inner.includes('|')
+    ? inner.split('|').map((option) => option.trim())
     : [];
   return { start, end, original, options, index: options.length };
 }
