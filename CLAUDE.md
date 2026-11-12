@@ -53,7 +53,7 @@ All API functions use the singleton `pb` client from `PocketBaseClient.ts` (`VIT
 
 - `TradesApi.ts` — trades CRUD. `TradesRow` and friends are hand-written types; `toRow` maps records (PocketBase stores empty numbers as `0` and empty text as `""`, mapped back to `null`; dates are normalized to ISO).
 - `MonthlyPlanApi.ts` — per-month markdown plan. PocketBase has no upsert, so `monthlyPlanUpsert` updates the existing plan or creates one (unique `(user, month_year)` index).
-- `WeeklyPlanApi.ts` — per-week markdown plan (big picture, calendar, technical analysis), upserted the same way (unique `(user, week_start)` index). `week_start` is the week's Monday in UTC (`toWeekStart` in `DateUtils.ts`). `WeeklyPlanDocument` shows the plan of a trade's week on every trade (`TradeView`), seeded from `templates/WeeklyPlan.md`.
+- `WeeklyPlanApi.ts` — the user's one living weekly plan (big picture, calendar, technical analysis), upserted the same way (unique `user` index); `templates/WeeklyPlan.md` stands in while none is saved. It is edited on the Plan page (`WeeklyPlanDocument`), and `useNewTrade` copies it into a new trade's journal in place of `{{weekly_plan}}` in `templates/TradePlan.md`, so later edits never change existing trades.
 - `OkxApi.ts` — OKX sync calls (see below).
 
 Trade and record ids are 15-character strings, not numbers.

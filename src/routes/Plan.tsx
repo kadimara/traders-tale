@@ -5,7 +5,6 @@ import { useAsync } from '@lib/hooks/useAsync';
 import { useNewTrade } from '@lib/hooks/useNewTrade';
 import { TradeView } from '@lib/components/TradeView';
 import { WeeklyPlanDocument } from '@lib/components/WeeklyPlanDocument';
-import { toWeekStart } from '@lib/utils/DateUtils';
 
 const isPlanned = (trade: TradesRow) => trade.status === 'planned' || trade.status === 'live';
 
@@ -43,6 +42,7 @@ export default function Plan() {
       className="flex flex-col gap-4"
       style={{ maxWidth: 1024, margin: '0 auto' }}
     >
+      <WeeklyPlanDocument />
       {data && !trade && (
         <>
           <h1>Trade plan</h1>
@@ -52,7 +52,6 @@ export default function Plan() {
             </button>
           </div>
           <p className="text-muted">No planned trades. Add one to start planning.</p>
-          <WeeklyPlanDocument weekStart={toWeekStart(new Date())} />
         </>
       )}
       {trade && (

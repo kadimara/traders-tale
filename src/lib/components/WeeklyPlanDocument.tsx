@@ -1,44 +1,46 @@
 import { useEffect, useState } from 'react';
 import { Edit, Save, X } from 'react-feather';
-import { weeklyPlanSelectByWeek, weeklyPlanUpsert } from '@lib/database/WeeklyPlanApi';
-import { addDays } from '@lib/utils/DateUtils';
-// Starting point for a week without a plan. Edit the .md file to change it.
-import weeklyPlanTemplate from '@lib/templates/WeeklyPlan.md?raw';
+import { weeklyPlanContent, weeklyPlanSelect, weeklyPlanUpsert } from '@lib/database/WeeklyPlanApi';
+import { formatDateTime } from '@lib/utils/DateUtils';
 import { MarkdownField } from './MarkdownField';
 
 /**
- * The plan of one week (big picture, calendar, technical analysis), shared by
- * every trade in that week: editing it here changes it for all of them.
- * Remount it with `key={weekStart}` when the week changes.
+ * The user's one living weekly plan (big picture, calendar, technical
+ * analysis), updated as the week goes on. New trades copy it into their
+ * journal, so editing it never changes an existing trade.
  */
-export function WeeklyPlanDocument({ weekStart }: { weekStart: string }) {
+export function WeeklyPlanDocument() {
   const [content, setContent] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [updated, setUpdated] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
-    weeklyPlanSelectByWeek(weekStart)
-      .then((plan) => isMounted && setContent(plan?.content ?? null))
-      .catch((err) => console.error('Failed to fetch weekly plan:', err))
-      .finally(() => isMounted && setLoading(false));
+    Promise.all([weeklyPlanContent(), weeklyPlanSelect()])
+      .then(([text, plan]) => {
+        if (!isMounted) return;
+        setContent(text);
+        setUpdated(plan?.updated ?? null);
+      })
+      .catch((err) => console.error('Failed to fetch weekly plan:', err));
     return () => {
       isMounted = false;
     };
-  }, [weekStart]);
+  }, []);
 
   const handleEdit = () => {
-    setDraft(content || weeklyPlanTemplate);
+    setDraft(content ?? '');
     setEditing(true);
   };
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      const saved = await weeklyPlanUpsert(weekStart, draft);
+      const saved = await weeklyPlanUpsert(draft);
       setContent(saved.content);
+      setUpdated(saved.updated);
       setEditing(false);
     } catch (err) {
       console.error('Failed to save weekly plan:', err);
@@ -51,19 +53,13 @@ export function WeeklyPlanDocument({ weekStart }: { weekStart: string }) {
     <div className="document relative" style={{ minHeight: 0 }}>
       <h2 style={{ marginTop: 0 }}>Weekly plan</h2>
       <p className="text-muted" style={{ marginTop: 0 }}>
-        Week {weekStart} – {addDays(weekStart, 6)} (UTC) · shared by every trade this week
+        {updated ? `Last updated ${formatDateTime(updated)}` : 'Not saved yet'} · copied into
+        every new trade
       </p>
       {editing ? (
         <MarkdownField value={draft} editing onChange={setDraft} />
-      ) : content ? (
-        <MarkdownField value={content} />
       ) : (
-        !loading && (
-          <p className="text-muted">
-            No plan for this week yet. Click edit to fill in the big picture, calendar and
-            technical analysis.
-          </p>
-        )
+        <MarkdownField value={content} />
       )}
       <div className="flex gap-1" style={{ position: 'absolute', top: 8, right: 8 }}>
         {editing ? (
@@ -80,7 +76,7 @@ export function WeeklyPlanDocument({ weekStart }: { weekStart: string }) {
             aria-label="Edit weekly plan"
             title="Edit weekly plan"
             onClick={handleEdit}
-            disabled={loading}
+            disabled={content === null}
           >
             <Edit />
           </button>

@@ -1,8 +1,7 @@
 /// <reference path="../pb_data/types.d.ts" />
 
-// One markdown plan per user per week (big picture, calendar, technical
-// analysis), shown on every trade made in that week. week_start is the Monday
-// the week starts on, in UTC, matching the BTC weekly candle.
+// One living markdown plan per user (big picture, calendar, technical
+// analysis), updated as the week goes on. New trades copy it into their journal.
 
 migrate(
   (app) => {
@@ -26,14 +25,12 @@ migrate(
           cascadeDelete: true,
           required: true,
         },
-        // "YYYY-MM-DD", a Monday
-        { name: 'week_start', type: 'text', required: true, pattern: '^\\d{4}-\\d{2}-\\d{2}$' },
         { name: 'content', type: 'text', max: 1000000 },
         { name: 'created', type: 'autodate', onCreate: true, onUpdate: false },
         { name: 'updated', type: 'autodate', onCreate: true, onUpdate: true },
       ],
       indexes: [
-        'CREATE UNIQUE INDEX idx_weekly_plan_user_week ON weekly_plan (user, week_start)',
+        'CREATE UNIQUE INDEX idx_weekly_plan_user ON weekly_plan (user)',
       ],
     });
     app.save(weeklyPlan);

@@ -2,7 +2,7 @@
 
 Date: · Session / Timeframe:
 
-The Big Picture, Calendar and Technical Analysis are in this week's plan, above.
+{{weekly_plan}}
 
 ## Setup
 
