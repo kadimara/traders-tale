@@ -3,7 +3,7 @@ import MonthHeader from '@lib/components/MonthHeader';
 
 export default function Journal() {
   return (
-    <main>
+    <main className="flex flex-col gap-3">
       <MonthHeader />
       <TradesTable />
     </main>

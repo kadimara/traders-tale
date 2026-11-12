@@ -49,7 +49,8 @@ export function TradesProvider({ children }: PropsWithChildren) {
 
   async function insertTrade(trade: TradesInsert) {
     const insertedTrade = await tradesInsert(trade);
-    setData((prev) => [insertedTrade, ...(prev || [])]);
+    // The realtime create event can arrive before this response and add it first.
+    setData((prev) => [insertedTrade, ...(prev || []).filter((t) => t.id !== insertedTrade.id)]);
     return insertedTrade;
   }
   async function updateTrade(id: string, trade: TradesUpdate) {

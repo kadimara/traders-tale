@@ -6,7 +6,7 @@ import { useOkxOrder } from '@lib/hooks/useOkxOrder';
 import { TradeDocument } from './TradeDocument';
 import { TradeCells, TradeColumnHeaders } from './TradesTable';
 
-// Shown in the title of the trade page; the plan page always trades BTC.
+// Shown in the title of the trade page.
 const hiddenColumns: (keyof TradesRow)[] = ['created_at', 'symbol', 'long_short'];
 
 /**

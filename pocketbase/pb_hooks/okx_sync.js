@@ -42,6 +42,14 @@ function plan(app, userId) {
   const positions = okx.closedPositions(conn).sort((a, b) => Number(a.cTime) - Number(b.cTime));
   const records = app.findRecordsByFilter('trades', 'user = {:user}', 'created_at', 0, 0, { user: userId });
 
+  // Imported trades get the user's current plan under the import note, like new trades in the app.
+  let currentPlan = '';
+  try {
+    currentPlan = app.findFirstRecordByFilter('current_plan', 'user = {:user}', { user: userId }).getString('content');
+  } catch (_) {
+    // No plan yet
+  }
+
   const linked = new Set(records.map((r) => r.getString('okx_pos_key')).filter(Boolean));
   const used = new Set();
   const ctValues = {};
@@ -126,7 +134,9 @@ function plan(app, userId) {
           stop: 0,
           risk: 0,
           playbook: false,
-          journal: '_Imported from OKX (' + p.instId + '). Add your plan and review._',
+          journal:
+            '_Imported from OKX (' + p.instId + '). Add your plan and review._' +
+            (currentPlan ? '\n\n' + currentPlan : ''),
         },
       });
     }

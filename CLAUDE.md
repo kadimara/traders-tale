@@ -53,6 +53,7 @@ All API functions use the singleton `pb` client from `PocketBaseClient.ts` (`VIT
 
 - `TradesApi.ts` — trades CRUD. `TradesRow` and friends are hand-written types; `toRow` maps records (PocketBase stores empty numbers as `0` and empty text as `""`, mapped back to `null`; dates are normalized to ISO).
 - `MonthlyPlanApi.ts` — per-month markdown plan. PocketBase has no upsert, so `monthlyPlanUpsert` updates the existing plan or creates one (unique `(user, month_year)` index).
+- `CurrentPlanApi.ts` — the user's current trade plan (markdown, one record per user, unique `user` index), edited on `/plan`. `useNewTrade` copies it into the journal of every new trade, and the OKX sync puts it under the import note of the trades it creates. `currentPlanUpsert` works like `monthlyPlanUpsert`.
 - `OkxApi.ts` — OKX sync calls (see below).
 
 Trade and record ids are 15-character strings, not numbers.
@@ -61,7 +62,7 @@ Trade and record ids are 15-character strings, not numbers.
 
 Schema changes are JS migrations, applied automatically when `pocketbase serve` starts; add a new file rather than editing an applied one.
 
-- `trades`, `monthly_plan`, `playbook` — every record has a `user` relation; API rules limit all access to the record's owner (`user = @request.auth.id`).
+- `trades`, `monthly_plan`, `current_plan`, `playbook` — every record has a `user` relation; API rules limit all access to the record's owner (`user = @request.auth.id`).
 - `okx_connections` — one per user, all API rules null (superusers and hooks only).
 - Required number fields reject `0` in PocketBase, so numeric trade fields are optional and validated in the app.
 

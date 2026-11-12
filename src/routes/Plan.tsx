@@ -1,65 +1,85 @@
-import { useEffect } from 'react';
-import { Plus } from 'react-feather';
-import { tradesSelectPlanned, tradesSubscribe, type TradesRow } from '@lib/database/TradesApi';
+import { useState } from 'react';
+import { Edit, Save, X } from 'react-feather';
+import { currentPlanSelect, currentPlanUpsert } from '@lib/database/CurrentPlanApi';
 import { useAsync } from '@lib/hooks/useAsync';
-import { useNewTrade } from '@lib/hooks/useNewTrade';
-import { TradeView } from '@lib/components/TradeView';
+import { MarkdownField } from '@lib/components/MarkdownField';
 
-const isPlanned = (trade: TradesRow) => trade.status === 'planned' || trade.status === 'live';
+// Market data the plan asks for.
+const MARKET_LINKS = [
+  { label: 'TradingView', href: 'https://www.tradingview.com/chart/30GXL3z7/' },
+  { label: 'Order book', href: 'https://www.coinglass.com/mergev2/BTC-USDT' },
+  { label: 'BTC ETF flows', href: 'https://farside.co.uk/btc/' },
+  { label: 'Fear & Greed', href: 'https://coinmarketcap.com/charts/fear-and-greed-index/' },
+  { label: 'Economic calendar', href: 'https://www.investing.com/economic-calendar' },
+];
 
-// Puts a trade in the list, or takes it out once it is no longer planned or live.
-function withTrade(list: TradesRow[] | null, changed: TradesRow, deleted = false) {
-  const others = (list ?? []).filter((t) => t.id !== changed.id);
-  if (deleted || !isPlanned(changed)) return others;
-  return [...others, changed].sort((a, b) => b.created_at.localeCompare(a.created_at));
-}
-
+// The current trading plan. New trades (and OKX imports) start with it as their journal.
 export default function Plan() {
-  const { data, setData } = useAsync(tradesSelectPlanned);
-  const newTrade = useNewTrade();
+  const { data, loading, setData } = useAsync(currentPlanSelect);
+  const [draft, setDraft] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
-  // The newest planned (or live) trade
-  const trade = data?.[0];
+  const content = data?.content ?? '';
+  const editing = draft !== null;
 
-  // Live updates, e.g. after sending a trade to OKX or the server's order check.
-  useEffect(() => {
-    const unsubscribe = tradesSubscribe((action, changed) => {
-      setData((prev) => withTrade(prev, changed, action === 'delete'));
-    });
-    return () => {
-      unsubscribe.then((fn) => fn());
-    };
-  }, [setData]);
-
-  const handleNew = async () => {
-    const created = await newTrade();
-    setData((prev) => withTrade(prev, created));
+  const save = async () => {
+    if (draft === null) return;
+    setSaving(true);
+    setSaveError(null);
+    try {
+      setData(await currentPlanUpsert(draft));
+      setDraft(null);
+    } catch (err) {
+      console.error('Failed to save plan:', err);
+      setSaveError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <main
-      className="flex flex-col gap-4"
+      className="flex flex-col gap-3"
       style={{ maxWidth: 1024, margin: '0 auto' }}
     >
-      {data && !trade && (
-        <>
-          <h1>Trade plan</h1>
-          <div>
-            <button aria-label="New plan" title="New plan" onClick={handleNew}>
-              <Plus />
+      <h1>Trade plan</h1>
+      <div className="flex flex-wrap gap-3" style={{ alignItems: 'center' }}>
+        <nav className="flex flex-wrap gap-3 text-muted">
+          {MARKET_LINKS.map(({ label, href }) => (
+            <a key={href} href={href} target="_blank" rel="noreferrer">
+              {label}
+            </a>
+          ))}
+        </nav>
+        <span className="flex-1" />
+        {editing ? (
+          <>
+            <button aria-label="Save" title="Save" onClick={save} disabled={saving}>
+              <Save />
             </button>
-          </div>
-          <p className="text-muted">No planned trades. Add one to start planning.</p>
-        </>
+            <button aria-label="Cancel" title="Cancel" onClick={() => setDraft(null)}>
+              <X />
+            </button>
+          </>
+        ) : (
+          <button aria-label="Edit" title="Edit" onClick={() => setDraft(content)} disabled={loading}>
+            <Edit />
+          </button>
+        )}
+      </div>
+      {saveError && <p style={{ color: 'var(--color-short)' }}>Could not save the plan: {saveError}</p>}
+      {!loading && !editing && !content && (
+        <p className="text-muted">No plan yet. New trades start with this plan as their journal.</p>
       )}
-      {trade && (
-        <TradeView
-          key={trade.id}
-          trade={trade}
-          onSaved={(saved) => setData((prev) => withTrade(prev, saved))}
-          title={<h1>Trade plan</h1>}
+      <div className="document">
+        <MarkdownField
+          value={editing ? draft : content}
+          editing={editing}
+          placeholder="Write your trade plan in markdown..."
+          onChange={setDraft}
         />
-      )}
+      </div>
     </main>
   );
 }
