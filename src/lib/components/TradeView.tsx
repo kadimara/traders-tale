@@ -4,6 +4,8 @@ import type { TradesRow } from '@lib/database/TradesApi';
 import { useTradeEdit } from '@lib/hooks/useTradeEdit';
 import { useOkxOrder } from '@lib/hooks/useOkxOrder';
 import { TradeDocument } from './TradeDocument';
+import { WeeklyPlanDocument } from './WeeklyPlanDocument';
+import { toWeekStart } from '@lib/utils/DateUtils';
 import { TradeCells, TradeColumnHeaders } from './TradesTable';
 
 // Shown in the title of the trade page; the plan page always trades BTC.
@@ -88,6 +90,11 @@ export function TradeView({
             </tr>
           </tbody>
         </table>
+        {/* The plan of the week the trade was made in, shared with that week's other trades. */}
+        <WeeklyPlanDocument
+          key={toWeekStart(trade.created_at)}
+          weekStart={toWeekStart(trade.created_at)}
+        />
         <TradeDocument
           trade={draft}
           editing={editing}

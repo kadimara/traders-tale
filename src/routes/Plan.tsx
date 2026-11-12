@@ -4,6 +4,8 @@ import { tradesSelectPlanned, tradesSubscribe, type TradesRow } from '@lib/datab
 import { useAsync } from '@lib/hooks/useAsync';
 import { useNewTrade } from '@lib/hooks/useNewTrade';
 import { TradeView } from '@lib/components/TradeView';
+import { WeeklyPlanDocument } from '@lib/components/WeeklyPlanDocument';
+import { toWeekStart } from '@lib/utils/DateUtils';
 
 const isPlanned = (trade: TradesRow) => trade.status === 'planned' || trade.status === 'live';
 
@@ -50,6 +52,7 @@ export default function Plan() {
             </button>
           </div>
           <p className="text-muted">No planned trades. Add one to start planning.</p>
+          <WeeklyPlanDocument weekStart={toWeekStart(new Date())} />
         </>
       )}
       {trade && (
